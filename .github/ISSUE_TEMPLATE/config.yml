@@ -1,0 +1,14 @@
+blank_issues_enabled: false  # Disables the option for blank issues
+
+contact_links:
+  - name: "Bug Report"
+    url: "/issues/new?template=bug_report.yml"
+    about: "Report a problem or unexpected behavior in the project."
+    
+  - name: "Feature Request"
+    url: "/issues/new?template=feature_request.yml"
+    about: "Suggest a new feature or improvement to the project."
+    
+  - name: "General Issue"
+    url: "/issues/new?template=general_issue.yml"
+    about: "Open an issue for other types of requests or questions."

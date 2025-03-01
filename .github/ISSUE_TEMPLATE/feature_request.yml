@@ -1,0 +1,52 @@
+name: Feature Request
+description: Solicite uma nova funcionalidade
+title: "[FEATURE] Descrição da Funcionalidade"
+labels: enhancement
+
+
+body:
+  - type: markdown
+    attributes:
+      value: "Por favor, forneça informações detalhadas sobre a funcionalidade desejada."
+
+  - type: input
+    id: titulo
+    attributes:
+      label: Título da Funcionalidade
+      description: "Resuma a funcionalidade que está solicitando."
+      placeholder: "Exemplo: Adicionar suporte para múltiplas línguas"
+    validations:
+      required: false
+
+  - type: textarea
+    id: descricao
+    attributes:
+      label: Descrição da Funcionalidade
+      description: "Descreva o que essa funcionalidade fará."
+      placeholder: "Explique os detalhes da funcionalidade."
+    validations:
+      required: false
+
+  - type: textarea
+    id: justificativa
+    attributes:
+      label: Justificativa
+      description: "Por que essa funcionalidade é importante?"
+      placeholder: "Explique como isso beneficiará o projeto."
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: Alternativas Consideradas
+      description: "Você considerou outras alternativas? Quais?"
+      placeholder: "Explique se houve alternativas e por que esta é a melhor."
+    validations:
+      required: false
+
+  - type: textarea
+    id: contexto_adicional
+    attributes:
+      label: Contexto Adicional
+      description: "Forneça mais informações que possam ser relevantes, como exemplos de uso ou referências."

@@ -1,0 +1,69 @@
+name: Bug Report
+description: Relate um bug no sistema
+title: "[BUG] Descrição do Bug"
+labels: bug
+
+body:
+  - type: markdown
+    attributes:
+      value: "Por favor, forneça o máximo de detalhes sobre o problema."
+
+  - type: input
+    id: sistema_afetado
+    attributes:
+      label: Sistema Afetado
+      description: "Qual parte do sistema é afetada por este bug?"
+      placeholder: "Exemplo: Autenticação, API de Voos, etc."
+    validations:
+      required: true
+
+  - type: textarea
+    id: descricao
+    attributes:
+      label: Descrição
+      description: "Descreva o bug de forma detalhada."
+      placeholder: "Explique o que está a acontecer e como podemos reproduzir o problema."
+    validations:
+      required: true
+
+  - type: input
+    id: versao
+    attributes:
+      label: Versão do Sistema
+      description: "Informe a versão do sistema onde o problema foi encontrado."
+      placeholder: "Exemplo: v1.0.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: passos_reproducao
+    attributes:
+      label: Passos para Reproduzir
+      description: "Liste os passos necessários para reproduzir o bug."
+      placeholder: "1. Vá para 'X' \n2. Clique em 'Y' \n3. Veja o erro."
+    validations:
+      required: false
+
+  - type: textarea
+    id: comportamento_esperado
+    attributes:
+      label: Comportamento Esperado
+      description: "O que você esperava que acontecesse?"
+      placeholder: "Descreva o comportamento esperado."
+    validations:
+      required: false
+
+  - type: textarea
+    id: comportamento_atual
+    attributes:
+      label: Comportamento Atual
+      description: "O que está realmente acontecendo?"
+      placeholder: "Descreva o comportamento atual."
+    validations:
+      required: false
+
+  - type: textarea
+    id: contexto_adicional
+    attributes:
+      label: Contexto Adicional
+      description: "Forneça mais informações que possam ser relevantes, como logs ou capturas de tela."

@@ -1,0 +1,31 @@
+name: General Issue
+description: Relate um problema ou solicite algo geral
+title: "[GENERAL] Descrição"
+
+body:
+  - type: input
+    id: resumo
+    attributes:
+      label: Resumo
+      description: "Resuma o propósito desta issue."
+      placeholder: "Explique brevemente o que você quer relatar ou sugerir."
+    validations:
+      required: false
+
+  - type: textarea
+    id: detalhes
+    attributes:
+      label: Detalhes
+      description: "Descreva a questão ou sugestão com detalhes."
+      placeholder: "Explique o que você quer relatar ou sugerir."
+    validations:
+      required: false
+
+  - type: textarea
+    id: contexto_adicional
+    attributes:
+      label: Contexto Adicional
+      description: "Adicione qualquer informação extra que considere relevante."
+      placeholder: "Exemplo: Links, logs, capturas de tela."
+    validations:
+      required: false
