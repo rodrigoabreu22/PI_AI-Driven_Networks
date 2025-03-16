@@ -1,2 +1,5 @@
 fastapi
 pandas
+uvicorn
+kafka-python
+requests
