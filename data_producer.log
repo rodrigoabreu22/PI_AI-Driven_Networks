@@ -1,0 +1,235 @@
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.03 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.03 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.03 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.01 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.03 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.02 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.03 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.03 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.03 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.02 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.03 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.02 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.03 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.01 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.00 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.03 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.03 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.02 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.03 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.03 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.03 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.03 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.04 secs
+WARNING:kafka.conn:DNS lookup failed for kafka:9092, exception was [Errno -2] Name or service not known. Is your advertised.listeners (called advertised.host.name before Kafka 9) correct and resolvable?
+ERROR:kafka.conn:DNS lookup failed for kafka:9092 (0)
+WARNING:kafka.client:No node available during check_version; sleeping 0.00 secs
