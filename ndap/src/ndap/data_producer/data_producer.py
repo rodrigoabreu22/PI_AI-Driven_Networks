@@ -8,7 +8,7 @@ from kafka.admin import KafkaAdminClient, NewTopic
 
 
 TOPIC = "RAW_NETWORK_DATA"
-BROKER = 'kafka:9092'
+BROKER = 'localhost:29092'
 
 def create_topic(topic_name, broker, num_partitions=1, replication_factor=1):
     """
@@ -41,7 +41,7 @@ def create_kafka_producer():
     return producer
 
 def send_to_kafka(producer, topic, data):
-    producer.produce(topic, json.dumps(data).encode("utf-8"))
+    producer.send(topic, json.dumps(data).encode("utf-8"))
     producer.flush()
 
 def get_data(csv_file):
