@@ -1,11 +1,9 @@
 import json
 import pandas as pd
-import requests
 import time
 import logging
 from kafka import KafkaProducer
 from kafka.admin import KafkaAdminClient, NewTopic
-
 
 TOPIC = "RAW_NETWORK_DATA"
 BROKER = 'localhost:29092'
@@ -34,25 +32,38 @@ def create_topic(topic_name, broker, num_partitions=1, replication_factor=1):
             admin_client.close()
 
 def create_kafka_producer():
-    producer = KafkaProducer(bootstrap_servers=BROKER, value_serializer=lambda v: json.dumps(v).encode('utf-8'))
-
+    """Creates a Kafka producer with automatic JSON serialization."""
+    producer = KafkaProducer(
+        bootstrap_servers=BROKER,
+        value_serializer=lambda v: json.dumps(v, default=str).encode('utf-8')  # JSON serializer with fallback
+    )
     logging.info(producer.bootstrap_connected())
     logging.info("Starting kafka producer.")
     return producer
 
 def send_to_kafka(producer, topic, data):
-    producer.send(topic, json.dumps(data).encode("utf-8"))
+    """Sends data to Kafka without additional encoding."""
+    producer.send(topic, data)  # Don't encode, already handled by value_serializer
     producer.flush()
 
 def get_data(csv_file):
-    """Reads network data from CSV and returns a list of NetworkItem objects."""
-    
+    """Reads network data from CSV and sends it to Kafka."""
     producer = create_kafka_producer()
     
-    for chunk in pd.read_csv(csv_file, chunksize=1):  # Read CSV row by row
-        row = chunk.to_dict(orient='records')[0]
-        send_to_kafka(producer, TOPIC, row)
-        print(f"Sent: {json.dumps(row)}")
+    column_mapping = [
+        "srcip", "sport", "dstip", "dsport", "proto", "state", "dur", "sbytes", "dbytes", "sttl", "dttl",
+        "sloss", "dloss", "service", "Sload", "Dload", "Spkts", "Dpkts", "swin", "dwin", "stcpb", "dtcpb",
+        "smeansz", "dmeansz", "trans_depth", "res_bdy_len", "Sjit", "Djit", "Stime", "Ltime", "Sintpkt", 
+        "Dintpkt", "tcprtt", "synack", "ackdat", "is_sm_ips_ports", "ct_state_ttl", "ct_flw_http_mthd", 
+        "is_ftp_login", "ct_ftp_cmd", "ct_srv_src", "ct_srv_dst", "ct_dst_ltm", "ct_src_ltm", "ct_src_dport_ltm",
+        "ct_dst_sport_ltm", "ct_dst_src_ltm", "attack_cat", "Label"
+    ]
+    
+    for chunk in pd.read_csv(csv_file, chunksize=1, header=None):  # Read CSV row by row
+        row = chunk.iloc[0].to_list()
+        mapped_row = dict(zip(column_mapping, row))  # Assign values to corresponding keys
+        send_to_kafka(producer, TOPIC, mapped_row)
+        logging.info(f"Sent: {json.dumps(mapped_row, default=str)}")
         time.sleep(1)
 
 def main():
@@ -61,9 +72,5 @@ def main():
     create_topic(TOPIC, BROKER)
     get_data(CSV_FILE_PATH)
 
-
 if __name__ == "__main__":
     main()
-
-
-
