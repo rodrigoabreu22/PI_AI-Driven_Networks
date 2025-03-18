@@ -1,5 +1,6 @@
 fastapi
 pandas
-uvicorn
 kafka-python
 requests
+influxdb-client
+python-dotenv
