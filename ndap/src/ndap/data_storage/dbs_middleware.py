@@ -1,7 +1,7 @@
 import json
 import logging
 from kafka import KafkaConsumer
-from influxdb_client import InfluxDBClient, Point, WritePrecision
+from influxdb_client import InfluxDBClient, Point, WriteOptions, WritePrecision
 from datetime import datetime, timezone
 import os
 from dotenv import load_dotenv
@@ -12,10 +12,13 @@ BROKER = 'localhost:29092'
 
 load_dotenv()
 
-INFLUX_URL = os.getenv("INFLUX_URL")
-INFLUX_TOKEN = os.getenv("INFLUX_TOKEN")
-INFLUX_ORG = os.getenv("INFLUX_ORG")
-INFLUX_BUCKET = os.getenv("INFLUX_BUCKET")
+INFLUXDB_URL = os.getenv("INFLUXDB_URL")
+INFLUXDB_TOKEN = os.getenv("INFLUXDB_TOKEN")
+INFLUXDB_ORG = os.getenv("INFLUXDB_ORG")
+INFLUXDB_BUCKET = os.getenv("INFLUXDB_BUCKET")
+
+influx_client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
+write_api = influx_client.write_api(write_options=WriteOptions(batch_size=1))
 
 def create_kafka_consumer(topic):
     """Creates a Kafka consumer with automatic JSON deserialization."""
@@ -38,11 +41,13 @@ def convert_unix_to_rfc3339(unix_timestamp):
         return None
 
 
-def store_raw_data(client, write_api, consumer, data):
+def store_raw_data(consumer, data):
 
     # Extract timestamp (assuming "Stime" is the best time field)
     unix_timestamp = data.get("Stime", None)  # Ensure this is in RFC3339 format
     timestamp = convert_unix_to_rfc3339(unix_timestamp)
+    logging.info(f"Converted timestamp: {timestamp}")
+
     if not timestamp:
         return  # Skip if no timestamp
 
@@ -58,38 +63,41 @@ def store_raw_data(client, write_api, consumer, data):
             point.field(key, value)
         else:  # Store as a tag
             point.tag(key, str(value))
+    try:
+        # Write to InfluxDB
+        write_api.write(bucket=INFLUXDB_BUCKET, org=INFLUXDB_ORG, record=point)
+        logging.info(f"Stored in InfluxDB: {json.dumps(data, default=str)}")
+    except Exception as e:
+        logging.error(f"Error writing to InfluxDB: {e}")
 
-    # Write to InfluxDB
-    write_api.write(bucket=INFLUX_BUCKET, org=INFLUX_ORG, record=point)
-    logging.info(f"Stored in InfluxDB: {json.dumps(data, default=str)}")
 
 
 def receive_data():
-
-    client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG)
-    write_api = client.write_api()
-
     consumer = create_kafka_consumer(TOPIC_RAW_DATA_RCV)
 
     try:
         while True:
-            msg = consumer.poll(1.0)  
-            if msg is None:
+            messages = consumer.poll(1.0)  # Returns a dictionary
+
+            if not messages:
                 continue
-            if msg.error():
-                raise Exception(msg.error())
 
-            # Parse JSON message
-            data = json.loads(msg.value().decode('utf-8'))
-            
-            store_raw_data(client, write_api, consumer, data)
-
+            for _, records in messages.items():  # Iterate over partitions
+                for record in records:  # Iterate over messages
+                    try:
+                        data = record.value  # Already deserialized by value_deserializer
+                        store_raw_data(consumer, data)
+                    except json.JSONDecodeError as e:
+                        logging.error(f"JSON decoding failed: {e}")
+                    except Exception as e:
+                        logging.error(f"Error processing message: {e}")
 
     except KeyboardInterrupt:
         print("Shutting down...")
     finally:
         consumer.close()
         client.close()
+
 
 def main():
     logging.basicConfig(filename='dbs_middleware.log', level=logging.INFO)
