@@ -35,7 +35,6 @@ def create_kafka_producer():
     """Creates a Kafka producer with automatic JSON serialization."""
     producer = KafkaProducer(
         bootstrap_servers=BROKER,
-        value_serializer=lambda v: json.dumps(v).encode('utf-8')
     )
     logging.info("Kafka producer started.")
     return producer
@@ -46,8 +45,7 @@ def create_kafka_consumer():
         TOPIC_RECEIVE,
         bootstrap_servers=BROKER,
         auto_offset_reset='earliest',
-        enable_auto_commit=True,
-        value_deserializer=lambda v: json.loads(v.decode('utf-8'))
+        enable_auto_commit=True
     )
     return consumer
 
@@ -66,10 +64,11 @@ def receive_and_push_data():
             logging.info(f"Received: {message.value}")
             send_to_kafka(producer, TOPIC_PUSH, message.value)
             logging.info(f"Forwarded to {TOPIC_PUSH}: {message.value}")
+            logging.info("\n")
         time.sleep(1)  # Avoids busy looping
 
 def main():
-    logging.basicConfig(filename='data_receiver.log', level=logging.INFO)
+    logging.basicConfig(filename='logs/data_receiver.log', level=logging.INFO)
     create_topic(TOPIC_PUSH, BROKER)
     receive_and_push_data()
 
