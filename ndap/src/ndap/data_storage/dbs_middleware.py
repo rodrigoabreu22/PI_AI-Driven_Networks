@@ -1,13 +1,12 @@
-import json
 import logging
 from kafka import KafkaConsumer
 from influxdb_client import InfluxDBClient, Point, WriteOptions, WritePrecision
 from datetime import datetime, timezone
 import os
 from dotenv import load_dotenv
+from scapy.all import Ether
 
 TOPIC_RAW_DATA_RCV = "RAW_NETWORK_DATA_RECEIVED"
-TOPIC_PROCESSED_DATA_RCV = "PROCESSED_NETWORK_DATA"
 BROKER = 'localhost:29092'
 
 load_dotenv()
@@ -21,83 +20,43 @@ influx_client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLU
 write_api = influx_client.write_api(write_options=WriteOptions(batch_size=1))
 
 def create_kafka_consumer(topic):
-    """Creates a Kafka consumer with automatic JSON deserialization."""
+    """Creates a Kafka consumer for raw binary packet data."""
     consumer = KafkaConsumer(
         topic,
         bootstrap_servers=BROKER,
         auto_offset_reset='earliest',
-        enable_auto_commit=True,
-        value_deserializer=lambda v: json.loads(v.decode('utf-8'))
+        enable_auto_commit=True
     )
     return consumer
 
-
-def convert_unix_to_rfc3339(unix_timestamp):
-    """Convert Unix timestamp (seconds) to RFC3339 format."""
+def store_raw_data(packet):
+    """Processes and stores raw packet data in InfluxDB."""
     try:
-        dt = datetime.fromtimestamp(int(unix_timestamp), tz=timezone.utc)
-        return dt.isoformat()
-    except (ValueError, TypeError):
-        return None
+        parsed_packet = Ether(packet.value)  # Parse raw binary data with Scapy
+        timestamp = datetime.utcnow().isoformat()
 
+        # Create InfluxDB point
+        point = Point("network_raw_data2").time(timestamp, WritePrecision.NS)
 
-def store_raw_data(consumer, data):
+        if parsed_packet.haslayer(Ether):
+            point.tag("src_mac", parsed_packet.src)
+            point.tag("dst_mac", parsed_packet.dst)
+            point.field("eth_type", parsed_packet.type)
 
-    # Extract timestamp (assuming "Stime" is the best time field)
-    unix_timestamp = data.get("Stime", None)  # Ensure this is in RFC3339 format
-    timestamp = convert_unix_to_rfc3339(unix_timestamp)
-    logging.info(f"Converted timestamp: {timestamp}")
-
-    if not timestamp:
-        return  # Skip if no timestamp
-
-    # Create InfluxDB point dynamically
-    point = Point("network_raw_data").time(timestamp, WritePrecision.NS)
-
-    for key, value in data.items():
-        #if key == "Stime":  # Already used as timestamp
-        #    continue
-
-        # Add fields and tags dynamically
-        if isinstance(value, (int, float)):  # Store as a field
-            point.field(key, value)
-        else:  # Store as a tag
-            point.tag(key, str(value))
-    try:
-        # Write to InfluxDB
         write_api.write(bucket=INFLUXDB_BUCKET, org=INFLUXDB_ORG, record=point)
-        logging.info(f"Stored in InfluxDB: {json.dumps(data, default=str)}")
+        logging.info(f"Stored packet in InfluxDB: {parsed_packet.summary()}")
     except Exception as e:
-        logging.error(f"Error writing to InfluxDB: {e}")
-
-
+        logging.error(f"Error processing packet: {e}")
 
 def receive_data():
     consumer = create_kafka_consumer(TOPIC_RAW_DATA_RCV)
-
     try:
-        while True:
-            messages = consumer.poll(1.0)  # Returns a dictionary
-
-            if not messages:
-                continue
-
-            for _, records in messages.items():  # Iterate over partitions
-                for record in records:  # Iterate over messages
-                    try:
-                        data = record.value  # Already deserialized by value_deserializer
-                        store_raw_data(consumer, data)
-                    except json.JSONDecodeError as e:
-                        logging.error(f"JSON decoding failed: {e}")
-                    except Exception as e:
-                        logging.error(f"Error processing message: {e}")
-
+        for message in consumer:
+            store_raw_data(message)
     except KeyboardInterrupt:
         print("Shutting down...")
     finally:
         consumer.close()
-        client.close()
-
 
 def main():
     logging.basicConfig(filename='dbs_middleware.log', level=logging.INFO)
