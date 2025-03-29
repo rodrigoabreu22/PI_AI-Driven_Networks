@@ -20,7 +20,24 @@ services:
     volumes:
       - influxdb2-data:/var/lib/influxdb2  # Store database data
       - influxdb2-config:/etc/influxdb2    # Store configuration
+    
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse
+    restart: always
+    ports:
+      - "${CLICKHOUSE_PORT_HTTP}"
+      - "${CLICKHOUSE_PORT_NATIVE}"
+    env_file:
+      - .env
+    environment:
+      - CLICKHOUSE_DB=${CLICKHOUSE_DB}
+      - CLICKHOUSE_USER=${CLICKHOUSE_USER}
+      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
 
 volumes:
   influxdb2-data:
   influxdb2-config:
+  clickhouse_data:
