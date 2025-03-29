@@ -1,7 +1,6 @@
-import json
-import pandas as pd
 import time
 import logging
+from scapy.all import PcapReader, raw
 from kafka import KafkaProducer
 from kafka.admin import KafkaAdminClient, NewTopic
 
@@ -32,45 +31,33 @@ def create_topic(topic_name, broker, num_partitions=1, replication_factor=1):
             admin_client.close()
 
 def create_kafka_producer():
-    """Creates a Kafka producer with automatic JSON serialization."""
+    """Creates a Kafka producer for sending raw packet data."""
     producer = KafkaProducer(
-        bootstrap_servers=BROKER,
-        value_serializer=lambda v: json.dumps(v, default=str).encode('utf-8')  # JSON serializer with fallback
+        bootstrap_servers=BROKER
     )
-    logging.info(producer.bootstrap_connected())
-    logging.info("Starting kafka producer.")
+    logging.info("Kafka producer started.")
     return producer
 
-def send_to_kafka(producer, topic, data):
-    """Sends data to Kafka without additional encoding."""
-    producer.send(topic, data)  # Don't encode, already handled by value_serializer
+def send_to_kafka(producer, topic, packet):
+    """Sends raw packet data to Kafka."""
+    producer.send(topic, raw(packet))  # Send raw binary data
     producer.flush()
 
-def get_data(csv_file):
-    """Reads network data from CSV and sends it to Kafka."""
+def get_pcap_data(pcap_file):
+    """Reads packets from a large PCAP file continuously and sends them to Kafka."""
     producer = create_kafka_producer()
     
-    column_mapping = [
-        "srcip", "sport", "dstip", "dsport", "proto", "state", "dur", "sbytes", "dbytes", "sttl", "dttl",
-        "sloss", "dloss", "service", "Sload", "Dload", "Spkts", "Dpkts", "swin", "dwin", "stcpb", "dtcpb",
-        "smeansz", "dmeansz", "trans_depth", "res_bdy_len", "Sjit", "Djit", "Stime", "Ltime", "Sintpkt", 
-        "Dintpkt", "tcprtt", "synack", "ackdat", "is_sm_ips_ports", "ct_state_ttl", "ct_flw_http_mthd", 
-        "is_ftp_login", "ct_ftp_cmd", "ct_srv_src", "ct_srv_dst", "ct_dst_ltm", "ct_src_ltm", "ct_src_dport_ltm",
-        "ct_dst_sport_ltm", "ct_dst_src_ltm", "attack_cat", "Label"
-    ]
-    
-    for chunk in pd.read_csv(csv_file, chunksize=1, header=None):  # Read CSV row by row
-        row = chunk.iloc[0].to_list()
-        mapped_row = dict(zip(column_mapping, row))  # Assign values to corresponding keys
-        send_to_kafka(producer, TOPIC, mapped_row)
-        logging.info(f"Sent: {json.dumps(mapped_row, default=str)}")
-        time.sleep(1)
+    with PcapReader(pcap_file) as pcap_reader:
+        for packet in pcap_reader:
+            send_to_kafka(producer, TOPIC, packet)
+            logging.info(f"Sent packet of length {len(packet)} bytes.")
+            time.sleep(0.5) 
 
 def main():
-    CSV_FILE_PATH = "UNSW-NB15_1.csv"
-    logging.basicConfig(filename='data_producer.log', level=logging.INFO)
+    PCAP_FILE_PATH = "dataset_files/1.pcap"
+    logging.basicConfig(filename='logs/pcap_producer.log', level=logging.INFO)
     create_topic(TOPIC, BROKER)
-    get_data(CSV_FILE_PATH)
+    get_pcap_data(PCAP_FILE_PATH)
 
 if __name__ == "__main__":
     main()

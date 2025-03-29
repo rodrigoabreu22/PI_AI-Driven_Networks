@@ -5,3 +5,4 @@ requests
 clickhouse-connect
 influxdb-client
 python-dotenv
+scapy
