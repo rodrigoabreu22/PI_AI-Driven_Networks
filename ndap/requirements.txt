@@ -1,6 +1,7 @@
 fastapi
 pandas
-uvicorn
 kafka-python
 requests
 clickhouse-connect
+influxdb-client
+python-dotenv
