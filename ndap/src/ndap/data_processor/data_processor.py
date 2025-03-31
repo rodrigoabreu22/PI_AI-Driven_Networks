@@ -5,7 +5,7 @@ import logging
 from kafka import KafkaProducer
 from kafka.admin import KafkaAdminClient, NewTopic
 
-TOPIC = "RAW_NETWORK_DATA"
+TOPIC = "PROCESSED_NETWORK_DATA"
 BROKER = 'localhost:29092'
 
 def create_topic(topic_name, broker, num_partitions=1, replication_factor=1):
@@ -67,8 +67,8 @@ def get_data(csv_file):
         time.sleep(1)
 
 def main():
-    CSV_FILE_PATH = "UNSW-NB15_1.csv"
-    logging.basicConfig(filename='data_producer.log', level=logging.INFO)
+    CSV_FILE_PATH = "dataset_files/NF-UNSW-NB15-v2.csv"
+    logging.basicConfig(filename='data_processor.log', level=logging.INFO)
     create_topic(TOPIC, BROKER)
     get_data(CSV_FILE_PATH)
 
