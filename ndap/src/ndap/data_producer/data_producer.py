@@ -43,9 +43,25 @@ def create_kafka_producer():
     return producer
 
 def send_to_kafka(producer, topic, packet):
-    """Sends raw packet data to Kafka"""
-    producer.send(topic, raw(packet))  # Send raw binary data
-    producer.flush()
+    """Sends raw packet data to Kafka with timestamp preservation"""
+    try:
+        # Get packet timestamp if available
+        timestamp = getattr(packet, 'time', time.time())
+        
+        # Include timestamp in message headers
+        headers = [
+            ('timestamp', str(timestamp).encode('utf-8'))
+        ]
+        
+        # Send raw packet with headers
+        producer.send(
+            topic,
+            value=raw(packet),
+            headers=headers
+        )
+        producer.flush()
+    except Exception as e:
+        logging.error(f"Error sending packet: {e}")
 
 def is_binary_field(value):
     """Check if a field value should be treated as binary (hex)."""
