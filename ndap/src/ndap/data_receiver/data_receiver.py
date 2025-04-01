@@ -102,23 +102,39 @@ def packet_to_dict(packet):
 
     return packet_dict
 
-def bytes_to_scapy(packet_bytes):
+def bytes_to_scapy(packet_bytes, original_timestamp=None):
     """
-    Convert raw bytes back to a Scapy packet with proper layer reconstruction.
-    This reverses what raw(packet) does.
+    Convert raw bytes back to a Scapy packet while preserving timestamp.
+    
+    Args:
+        packet_bytes: Raw packet bytes from Kafka
+        original_timestamp: Optional timestamp to preserve (float epoch time)
     """
     try:
-        for layer in [CookedLinux, IP, Ether]:
+        # Try common layer types in order of likelihood
+        for layer in [CookedLinux, Ether, IP]:
             try:
                 packet = layer(packet_bytes)
-
-                if len(packet) == len(packet_bytes):  
+                if len(packet) == len(packet_bytes):
+                    # Restore original timestamp if provided
+                    if original_timestamp is not None and hasattr(packet, 'time'):
+                        packet.time = original_timestamp
                     return packet
             except:
                 continue
+        
+        # Fallback to Raw packet if no layers matched
+        packet = Raw(packet_bytes)
+        if original_timestamp is not None and hasattr(packet, 'time'):
+            packet.time = original_timestamp
+        return packet
+        
     except Exception as e:
         print(f"Packet reconstruction failed: {e}")
-        return Raw(packet_bytes)
+        packet = Raw(packet_bytes)
+        if original_timestamp is not None and hasattr(packet, 'time'):
+            packet.time = original_timestamp
+        return packet
 
 def send_to_kafka(producer, topic, data):
     """Sends JSON data to Kafka."""
@@ -128,21 +144,32 @@ def send_to_kafka(producer, topic, data):
     
 
 def receive_and_push_data():
-    """Complete packet processing pipeline"""
+    """Complete packet processing pipeline with timestamp preservation"""
     consumer = create_kafka_consumer()
     producer = create_kafka_producer()
     
     for message in consumer:
-        # Reconstruct packet from raw bytes
-        packet = bytes_to_scapy(message.value)
-        
-        # Process with existing functions
-        packet_dict = packet_to_dict(packet)
-        
-        packet_json = json.dumps(packet_dict, indent=2)
-        
-        logging.info(f"\nReceived packet:\n{packet_json}")
-        send_to_kafka(producer, TOPIC_PUSH, packet_json)
+        try:
+            # Extract timestamp from message headers if available
+            original_ts = None
+            if message.headers:
+                for header in message.headers:
+                    if header[0] == 'timestamp':
+                        original_ts = float(header[1].decode('utf-8'))
+                        break
+            
+            # Reconstruct packet with original timestamp
+            packet = bytes_to_scapy(message.value, original_ts)
+            
+            # Process with existing functions
+            packet_dict = packet_to_dict(packet)
+            packet_json = json.dumps(packet_dict, indent=2)
+            
+            logging.info(f"\nReceived packet:\n{packet_json}")
+            send_to_kafka(producer, TOPIC_PUSH, packet_json)
+            
+        except Exception as e:
+            logging.error(f"Error processing message: {e}")
         
         time.sleep(2)
 
