@@ -13,7 +13,7 @@ BROKER = 'localhost:29092'
 load_dotenv()
 
 # InfluxDB Configuration
-INFLUXDB_URL = "http://localhost:8087"
+INFLUXDB_URL = "http://localhost:8086"
 INFLUXDB2_TOKEN = os.getenv("INFLUXDB2_TOKEN")
 INFLUXDB2_ORG = os.getenv("INFLUXDB2_ORG")
 INFLUXDB_BUCKET = "processed_data"

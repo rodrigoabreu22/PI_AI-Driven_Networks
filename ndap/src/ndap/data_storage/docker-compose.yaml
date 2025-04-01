@@ -6,7 +6,7 @@ services:
     container_name: influxdb_raw
     restart: always
     ports:
-      - "8086:8086"
+      - "8088:8086"
     env_file:
       - .env
     environment:
@@ -26,7 +26,7 @@ services:
     container_name: influxdb_processed
     restart: always
     ports:
-      - "8087:8086"  # Different port
+      - "8086:8086"  # Different port
     env_file:
       - .env
     environment:
@@ -57,9 +57,22 @@ services:
     volumes:
       - clickhouse_data:/var/lib/clickhouse
 
+  chronograf:
+    image: chronograf:latest
+    container_name: chronograf
+    restart: always
+    ports:
+      - "8888:8888"
+    depends_on:
+      - influxdb_processed
+    command: --influxdb-url=http://influxdb_processed:8086/
+    volumes:
+      - chronograf_data:/var/lib/chronograf
+
 volumes:
   influxdb2-raw-data:
   influxdb2-raw-config:
   influxdb2-processed-data:
   influxdb2-processed-config:
   clickhouse_data:
+  chronograf_data:
