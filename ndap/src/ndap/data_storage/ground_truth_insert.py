@@ -25,11 +25,40 @@ if bucket_response == None:
 
     df = pd.read_csv(CSV_FILE_PATH)
 
+    df.columns = df.columns.str.strip()
+
+    df = df.drop(columns=["."], errors="ignore")
+
+    # Define which columns should be tags vs. fields (only if they exist)
+    tag_columns = [
+        "Attack category", "Attack subcategory", "Protocol", "Attack Name",
+        "Source IP", "Destination IP"
+    ]
+
+    # Define fields (numeric values for analysis)
+    field_columns = [
+        "Source Port", "Destination Port"
+    ]
+
     write_api = client.write_api(write_options=SYNCHRONOUS)
+
     for _, row in df.iterrows():
-        point = Point("ground_truth") 
-        for col in df.columns:
-            point = point.field(col, row[col])
+        point = Point("attack_logs")
+
+        # Add tags (for filtering)
+        for tag in tag_columns:
+            if tag in df.columns:
+                point = point.tag(tag, str(row[tag]).strip())  # Convert to string and strip spaces
+
+        # Add fields (numerical values for analysis)
+        for field in field_columns:
+            try:
+                value = float(row[field]) if pd.notna(row[field]) else 0
+                point = point.field(field, value)
+
+            except ValueError:
+                continue  
+        
         write_api.write(bucket=BUCKET_NAME, org=INFLUXDB_ORG, record=point)
 
     print("Data successfully written to InfluxDB.")
