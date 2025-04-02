@@ -8,13 +8,15 @@ import os
 from dotenv import load_dotenv
 
 # Configuration
-load_dotenv()
 TOPIC_RAW_DATA_RCV = "RAW_NETWORK_DATA_RECEIVED"
 BROKER = 'localhost:29092'
-INFLUXDB_URL = "http://localhost:8086"
-INFLUXDB_TOKEN = "101_Yvzx1bcYhRAXjf2-OmL3aQOBWiayeQ0pTgixDhN8DE06wgEkwZ5wvUWSktLzYIJmwjzHF-Y1KNT1WTJCDg=="
-INFLUXDB_ORG = "pi_14"
-INFLUXDB_BUCKET = "raw_data"
+
+load_dotenv()
+
+INFLUXDB_URL = os.getenv("INFLUXDB_URL")
+INFLUXDB_TOKEN = os.getenv("INFLUXDB_TOKEN")
+INFLUXDB_ORG = os.getenv("INFLUXDB_ORG")
+INFLUXDB_BUCKET = os.getenv("INFLUXDB_BUCKET")
 
 # Initialize clients
 influx_client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
