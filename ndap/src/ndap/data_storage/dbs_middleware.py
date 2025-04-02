@@ -168,7 +168,6 @@ def main():
         format='%(asctime)s - %(levelname)s - %(message)s',
         handlers=[
             logging.FileHandler('logs/dbs_middleware.log'),
-            logging.StreamHandler()
         ]
     )
     logging.info("Starting network packet storage service")
