@@ -42,7 +42,7 @@ def convert_unix_to_rfc3339(unix_timestamp):
 
 def store_data(data):
     """Writes processed data to InfluxDB."""
-    unix_timestamp = data.get("Stime", None)
+    unix_timestamp = data.get("timestamp_unix", None)
     timestamp = convert_unix_to_rfc3339(unix_timestamp)
     if not timestamp:
         logging.warning("No valid timestamp found, skipping entry.")
