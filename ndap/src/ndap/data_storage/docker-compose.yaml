@@ -6,7 +6,7 @@ services:
     container_name: influxdb_raw
     restart: always
     ports:
-      - "8086:8086"
+      - "8087:8086"
     env_file:
       - .env
     environment:
@@ -26,7 +26,7 @@ services:
     container_name: influxdb_processed
     restart: always
     ports:
-      - "8087:8086"  # Different port
+      - "8086:8086"  # Different port
     env_file:
       - .env
     environment:
@@ -35,7 +35,6 @@ services:
       - INFLUXDB_INIT_PASSWORD=${INFLUXDB_PASSWORD}
       - INFLUXDB_INIT_ORG=${INFLUXDB_ORG}
       - INFLUXDB_INIT_BUCKET=processed_data
-      - INFLUXDB_INIT_RETENTION=0
       - INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB2_TOKEN}
     volumes:
       - influxdb2-processed-data:/var/lib/influxdb2
@@ -57,9 +56,23 @@ services:
     volumes:
       - clickhouse_data:/var/lib/clickhouse
 
+  data_ingest:
+    build: .
+    container_name: data_ingest
+    restart: on-failure
+    depends_on:
+      - influxdb_raw
+    environment:
+      - INFLUXDB_URL=http://influxdb_raw:8087
+    volumes:
+      - ./ground_truth_insert.py:/app/ground_truth_insert.py
+      - ./NUSW-NB15_GT.csv:/app/NUSW-NB15_GT.csv
+    command: ["python", "/app/ground_truth_insert.py"]
+
 volumes:
   influxdb2-raw-data:
   influxdb2-raw-config:
   influxdb2-processed-data:
   influxdb2-processed-config:
   clickhouse_data:
+  chronograf_data:
