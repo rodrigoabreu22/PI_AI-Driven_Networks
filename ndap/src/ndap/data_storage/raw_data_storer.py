@@ -6,6 +6,7 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 from datetime import datetime, timezone
 import os
 from dotenv import load_dotenv
+import re
 
 # Configuration
 TOPIC_RAW_DATA_RCV = "RAW_NETWORK_DATA_RECEIVED"
@@ -49,29 +50,49 @@ def convert_to_rfc3339(timestamp):
         logging.error(f"Timestamp conversion error: {e}")
         return None
 
-def flatten_json(data, prefix='', ignore_list=None):
-    """Recursively flatten JSON data with optional ignore list."""
-    if ignore_list is None:
-        ignore_list = []
+def sanitize_field_name(name):
+    """Sanitize field names to be InfluxDB compatible and handle duplicates."""
+    # Replace special characters with underscores
+    sanitized = re.sub(r'[^a-zA-Z0-9_]', '_', name)
+    # Ensure it starts with a letter
+    if not sanitized or sanitized[0].isdigit():
+        sanitized = f"field_{sanitized}"
+    return sanitized.lower()
+
+def flatten_and_sanitize(data, parent_key='', sep='_', ignore_fields=None):
+    """
+    Flatten nested JSON structures and sanitize field names.
+    Handles repetitive names by adding parent context.
+    """
+    if ignore_fields is None:
+        ignore_fields = []
     
-    flattened = {}
+    items = {}
     
-    def _flatten(value, key_prefix):
-        if isinstance(value, dict):
-            for k, v in value.items():
-                new_prefix = f"{key_prefix}.{k}" if key_prefix else k
-                if k in ignore_list:
-                    flattened[new_prefix] = json.dumps(v) if isinstance(v, (dict, list)) else v
+    def _flatten(obj, parent_key=''):
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                new_key = f"{parent_key}{sep}{k}" if parent_key else k
+                if k in ignore_fields:
+                    # Store ignored fields as JSON strings
+                    items[sanitize_field_name(new_key)] = json.dumps(v) if isinstance(v, (dict, list)) else v
                 else:
-                    _flatten(v, new_prefix)
-        elif isinstance(value, (list, tuple)):
-            for i, item in enumerate(value):
-                _flatten(item, f"{key_prefix}[{i}]")
+                    _flatten(v, new_key)
+        elif isinstance(obj, (list, tuple)):
+            for i, item in enumerate(obj):
+                _flatten(item, f"{parent_key}{sep}{i}")
         else:
-            flattened[key_prefix] = value
+            final_key = sanitize_field_name(parent_key)
+            # Handle duplicate keys by adding numeric suffix
+            if final_key in items:
+                counter = 1
+                while f"{final_key}_{counter}" in items:
+                    counter += 1
+                final_key = f"{final_key}_{counter}"
+            items[final_key] = obj
     
-    _flatten(data, prefix)
-    return flattened
+    _flatten(data, parent_key)
+    return items
 
 def store_flattened_packet(packet_data, ignore_fields=None):
     """Store flattened JSON packet in InfluxDB with robust error handling."""
@@ -107,8 +128,8 @@ def store_flattened_packet(packet_data, ignore_fields=None):
             logging.warning("No valid timestamp found in packet")
             return
         
-        # Flatten the JSON structure
-        flattened = flatten_json(packet_data, ignore_list=ignore_fields)
+        # Flatten and sanitize the JSON structure
+        flattened = flatten_and_sanitize(packet_data, ignore_fields=ignore_fields)
         logging.debug(f"Flattened fields: {flattened}")
         
         # Create InfluxDB point with timestamp
@@ -117,10 +138,14 @@ def store_flattened_packet(packet_data, ignore_fields=None):
         # Add all flattened fields
         for field_name, field_value in flattened.items():
             if field_value is not None:  # Skip None values
+                # Convert lists and dicts to JSON strings
+                if isinstance(field_value, (dict, list)):
+                    field_value = json.dumps(field_value)
                 point.field(field_name, field_value)
         
         # Add important fields as tags
-        for tag_field in ['packet_type', 'summary', 'source', 'proto']:
+        tag_fields = ['packet_type', 'summary', 'source', 'proto', 'src_ip', 'dst_ip']
+        for tag_field in tag_fields:
             if tag_field in packet_data and packet_data[tag_field] is not None:
                 try:
                     point.tag(tag_field, str(packet_data[tag_field]))
@@ -130,7 +155,7 @@ def store_flattened_packet(packet_data, ignore_fields=None):
         # Write to InfluxDB
         write_api.write(bucket=INFLUXDB_BUCKET, org=INFLUXDB_ORG, record=point)
         logging.info(f"Successfully stored packet with timestamp {timestamp}")
-        logging.info(f"{point}")
+        logging.info(f"Stored point: {point}")
 
     except Exception as e:
         logging.error(f"Error storing flattened packet: {e}")
@@ -139,7 +164,7 @@ def store_flattened_packet(packet_data, ignore_fields=None):
 def receive_and_store_data():
     """Receive data from Kafka and store in InfluxDB."""
     consumer = create_kafka_consumer(TOPIC_RAW_DATA_RCV)
-    ignore_fields = []  # Add fields you want to keep as JSON strings here
+    ignore_fields = ['raw_payload']  # Fields to keep as JSON strings
 
     try:
         while True:
@@ -167,7 +192,7 @@ def main():
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s',
         handlers=[
-            logging.FileHandler('logs/dbs_middleware.log'),
+            logging.FileHandler('logs/dbs_middleware.log')
         ]
     )
     logging.info("Starting network packet storage service")
