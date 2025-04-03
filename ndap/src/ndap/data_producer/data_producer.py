@@ -137,7 +137,7 @@ def get_pcap_data(pcap_file):
 def main():
     PCAP_FILE_PATH = "dataset_files/1.pcap"
     logging.basicConfig(
-        filename='logs/pcap_producer.log', 
+        filename='logs/data_producer.log', 
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s'
     )
