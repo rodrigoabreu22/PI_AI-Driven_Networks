@@ -21,43 +21,115 @@ def initialize_logging():
     )
 
 def reconstruct_json(record_values, current_packet=None):
-    """Reconstructs JSON packets properly from InfluxDB query results."""
+    """Reconstructs JSON packets properly from InfluxDB query results.
+    
+    Args:
+        record_values: Dictionary containing packet data fields from InfluxDB
+        current_packet: Partially reconstructed packet (used for recursive calls)
+        
+    Returns:
+        Dictionary representing the reconstructed packet in JSON format
+    """
     try:
+        # Initialize packet structure if this is the first call
         if current_packet is None:
             current_packet = {
                 "timestamp": record_values.get("timestamp", 0),
                 "timestamp_iso": record_values.get("timestamp_iso", ""),
-                "summary": record_values.get("pkt_summary", ""),  # Use renamed summary
+                "summary": record_values.get("pkt_summary", ""),
                 "length": record_values.get("length", 0),
                 "layers": []
             }
 
-        # Process layers dynamically
+        options_dict = {}  # Temporary storage for options
+        
+        # Process all fields in the record
         for key, value in record_values.items():
-            if key.startswith("layers_"):
-                parts = key.split("_")
+            if not key.startswith("layers_"):
+                continue
+                
+            parts = key.split("_")
+            try:
                 layer_index = int(parts[1])  # Extract layer index
-                field_type = parts[2]
+            except (IndexError, ValueError):
+                logging.warning(f"Invalid layer index in key: {key}")
+                continue
 
-                # Ensure the layer exists
-                while len(current_packet["layers"]) <= layer_index:
-                    current_packet["layers"].append({"name": "", "fields": {}})
+            # Ensure we have enough layers in the packet
+            while len(current_packet["layers"]) <= layer_index:
+                current_packet["layers"].append({"name": "", "fields": {}})
 
-                # Assign layer name
-                if field_type == "name":
-                    current_packet["layers"][layer_index]["name"] = value
+            # Skip if layer index is somehow still invalid
+            if layer_index >= len(current_packet["layers"]):
+                continue
 
-                # Assign field values inside "fields"
-                elif field_type == "fields" and len(parts) > 3:
-                    field_name = "_".join(parts[3:])  # Extract actual field name
-                    current_packet["layers"][layer_index]["fields"][field_name] = value
+            field_type = parts[2] if len(parts) > 2 else None
+
+            # Handle layer name assignment
+            if field_type == "name":
+                current_packet["layers"][layer_index]["name"] = value or ""
+                continue
+
+            # Handle regular fields
+            if field_type == "fields" and len(parts) > 3:
+                # Special handling for TCP/IP options
+                if "options" in parts:
+                    try:
+                        if len(parts) >= 5:  # Need at least layers_X_fields_options_Y_Z
+                            option_index = int(parts[4])
+                            option_type = int(parts[5]) if len(parts) > 5 else 0
+                            
+                            if layer_index not in options_dict:
+                                options_dict[layer_index] = {}
+                            
+                            if option_type == 0 and value:
+                                if option_index not in options_dict[layer_index]:
+                                    options_dict[layer_index][option_index] = [value, None]
+                                else:
+                                    options_dict[layer_index][option_index][0] = value
+                        
+                            elif option_type == 1:
+                                if option_index not in options_dict[layer_index]:
+                                    options_dict[layer_index][option_index] = ["", value]
+                                else: 
+                                    options_dict[layer_index][option_index][1] = value
+                    except (IndexError, ValueError) as e:
+                        logging.warning(f"Malformed option field {key}: {e}")
+                    continue
+                
+                # Handle all other fields
+                field_name = "_".join(parts[3:])  # Reconstruct original field name
+                current_packet["layers"][layer_index]["fields"][field_name] = value
+
+        # Process collected options
+        for layer_index, options in options_dict.items():
+            if layer_index < len(current_packet["layers"]):
+                sorted_options = sorted(options.items())
+                options_list = [[opt_name, opt_value] for _, (opt_name, opt_value) in sorted_options]
+                current_packet["layers"][layer_index]["fields"]["options"] = options_list
+
+        # Ensure "options" exists for all relevant layers
+        first_layer = True
+        for layer in current_packet["layers"]:
+            if layer["name"] in ["", "Raw", "Padding"] or first_layer:
+                first_layer=False
+                continue
+                
+            if "options" not in layer["fields"]:
+                layer["fields"]["options"] = []
+
+            # Special handling for IP flags
+            if layer["name"] == "IP" and "flags" in layer["fields"]:
+                if layer["fields"]["flags"] is None:
+                    layer["fields"]["flags"] = ""
 
         return current_packet
 
     except Exception as e:
-        logging.error(f"Reconstruction failed: {str(e)}")
+        logging.error(f"Reconstruction failed with error: {e!r}", exc_info=True)
         logging.error(f"Problematic record: {record_values}")
-        return current_packet
+        return current_packet or {}  # Return empty dict if current_packet is None
+
 
 def query_influx_data(query_api, limit=50):
     """Query packet data from InfluxDB with proper field extraction"""
@@ -78,7 +150,9 @@ def query_influx_data(query_api, limit=50):
                         "layers_2_fields_seq", "layers_2_fields_ack", "layers_2_fields_dataofs",
                         "layers_2_fields_reserved", "layers_2_fields_flags", "layers_2_fields_window",
                         "layers_2_fields_chksum", "layers_2_fields_urgptr", "layers_2_fields_options",
-                        "layers_2_fields_load", "layers_3_name", "layers_3_fields_load"])  // ✅ Added missing "load" field
+                        "layers_2_fields_options_0_0", "layers_2_fields_options_0_1", "layers_2_fields_options_1_0", 
+                        "layers_2_fields_options_1_1", "layers_2_fields_options_2_0", "layers_2_fields_options_2_1", 
+                        "layers_2_fields_load", "layers_3_name", "layers_3_fields_load"])
       |> limit(n: {limit})
     """
 
@@ -111,7 +185,7 @@ def main():
         logging.info(f"Successfully extracted {len(packets)} packets")
 
         # Save JSON output
-        with open("output.json", "w") as f:
+        with open("output2.json", "w") as f:
             json.dump(packets, f, indent=2)
 
     except KeyboardInterrupt:
