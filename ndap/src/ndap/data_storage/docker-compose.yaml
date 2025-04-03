@@ -6,7 +6,7 @@ services:
     container_name: influxdb_raw
     restart: always
     ports:
-      - "8088:8086"
+      - "8087:8086"
     env_file:
       - .env
     environment:
@@ -20,11 +20,6 @@ services:
     volumes:
       - influxdb2-raw-data:/var/lib/influxdb2
       - influxdb2-raw-config:/etc/influxdb2
-    command: >
-      /bin/sh -c "
-      influx bucket create --name ground_truth --org ${INFLUXDB_ORG} --token ${INFLUXDB_TOKEN};
-      sleep infinity;
-      "
 
   influxdb_processed:
     image: influxdb:2.7
@@ -40,7 +35,6 @@ services:
       - INFLUXDB_INIT_PASSWORD=${INFLUXDB_PASSWORD}
       - INFLUXDB_INIT_ORG=${INFLUXDB_ORG}
       - INFLUXDB_INIT_BUCKET=processed_data
-      - INFLUXDB_INIT_RETENTION=0
       - INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB2_TOKEN}
     volumes:
       - influxdb2-processed-data:/var/lib/influxdb2
@@ -62,17 +56,19 @@ services:
     volumes:
       - clickhouse_data:/var/lib/clickhouse
 
-  chronograf:
-    image: chronograf:latest
-    container_name: chronograf
-    restart: always
-    ports:
-      - "8888:8888"
+  data_ingest:
+    build: .
+    container_name: data_ingest
+    restart: on-failure
     depends_on:
-      - influxdb_processed
-    command: --influxdb-url=http://influxdb_processed:8086/
+      - influxdb_raw
+    environment:
+      - INFLUXDB_URL=http://influxdb_raw:8087
     volumes:
-      - chronograf_data:/var/lib/chronograf
+      - ./data.csv:/app/data.csv
+      - ./ground_truth_insert.py:/app/ground_truth_insert.py
+      - ./NUSW-NB15_GT.csv:/app/NUSW-NB15_GT.csv
+    command: ["python", "/app/ground_truth_insert.py"]
 
 volumes:
   influxdb2-raw-data:

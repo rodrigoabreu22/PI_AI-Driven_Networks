@@ -29,15 +29,15 @@ if bucket_response == None:
 
     df = df.drop(columns=["."], errors="ignore")
 
-    # Define which columns should be tags vs. fields (only if they exist)
+    # Define which columns should be tags
     tag_columns = [
-        "Attack category", "Attack subcategory", "Protocol", "Attack Name",
+        "Source Port", "Destination Port",  "Protocol",
         "Source IP", "Destination IP"
     ]
 
-    # Define fields (numeric values for analysis)
+    # Define fields 
     field_columns = [
-        "Source Port", "Destination Port"
+        "Attack category", "Attack subcategory", "Attack Name"
     ]
 
     write_api = client.write_api(write_options=SYNCHRONOUS)
