@@ -2,3 +2,5 @@ venv/
 .env*
 *.log
 *.pcap
+*.csv
+*.json
