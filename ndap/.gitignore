@@ -3,4 +3,3 @@ venv/
 *.log
 .env*
 *.cap
-data.csv/

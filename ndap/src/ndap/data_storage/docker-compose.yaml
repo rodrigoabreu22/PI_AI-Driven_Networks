@@ -65,7 +65,6 @@ services:
     environment:
       - INFLUXDB_URL=http://influxdb_raw:8087
     volumes:
-      - ./data.csv:/app/data.csv
       - ./ground_truth_insert.py:/app/ground_truth_insert.py
       - ./NUSW-NB15_GT.csv:/app/NUSW-NB15_GT.csv
     command: ["python", "/app/ground_truth_insert.py"]
