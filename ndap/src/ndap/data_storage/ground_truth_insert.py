@@ -7,10 +7,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 INFLUXDB_URL = "http://influxdb_raw:8086"  
-INFLUXDB_TOKEN = os.getenv("INFLUXDB_INIT_ADMIN_TOKEN")
-INFLUXDB_ORG = os.getenv("INFLUXDB_INIT_ORG")
+INFLUXDB_TOKEN = os.getenv("INFLUXDB_TOKEN")
+INFLUXDB_ORG = os.getenv("INFLUXDB_ORG")
 BUCKET_NAME = "ground_truth"
-CSV_FILE_PATH = "/app/NUSW-NB15_GT.csv"  
+CSV_FILE_PATH = "/app/NUSW-NB15_GT.csv"
 
 client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
 
@@ -37,7 +37,7 @@ if bucket_response == None:
 
     # Define fields 
     field_columns = [
-        "Attack category", "Attack subcategory", "Attack Name"
+        "Attack category"
     ]
 
     write_api = client.write_api(write_options=SYNCHRONOUS)
@@ -50,15 +50,15 @@ if bucket_response == None:
             if tag in df.columns:
                 point = point.tag(tag, str(row[tag]).strip())  # Convert to string and strip spaces
 
-        # Add fields (numerical values for analysis)
+        # Add fields 
         for field in field_columns:
             try:
-                value = float(row[field]) if pd.notna(row[field]) else 0
+                value = str(row[field]) if pd.notna(row[field]) else ""
                 point = point.field(field, value)
 
             except ValueError:
                 continue  
-        
+
         write_api.write(bucket=BUCKET_NAME, org=INFLUXDB_ORG, record=point)
 
     print("Data successfully written to InfluxDB.")
