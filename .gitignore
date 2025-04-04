@@ -4,3 +4,4 @@ venv/
 *.pcap
 *.csv
 *.json
+last_timestamp.txt
