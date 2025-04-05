@@ -113,7 +113,7 @@ def json_to_pcap(json_file, output_pcap):
 
     try:
         wrpcap(output_pcap, packets)
-        print(f"✅ Successfully wrote {len(packets)} packets to {output_pcap}")
+        print(f"Successfully wrote {len(packets)} packets to {output_pcap}")
         return True
     except Exception as e:
         print(f"Error writing PCAP file: {e}", file=sys.stderr)
