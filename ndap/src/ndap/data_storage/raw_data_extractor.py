@@ -241,7 +241,7 @@ def main():
             if packets:
                 logging.info(f"packets size: {len(packets)}")
 
-                with open("output.json", "a") as f:
+                with open("output.json", "w") as f:
                     json.dump(packets, f, indent=2)
                     f.write("\n")
                 
