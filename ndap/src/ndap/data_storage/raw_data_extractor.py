@@ -389,6 +389,5 @@ def reconstruct_json(record_values, current_packet=None):
         logging.error(f"Problematic record: {record_values}")
         return current_packet or {}  # Return empty dict if current_packet is None
 
-
 if __name__ == "__main__":
     main()
