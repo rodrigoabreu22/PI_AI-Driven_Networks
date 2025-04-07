@@ -14,7 +14,7 @@ BROKER = 'localhost:29092'
 
 load_dotenv()
 
-INFLUXDB_URL = os.getenv("INFLUXDB_URL")
+INFLUXDB_URL = "http://localhost:8087"
 INFLUXDB_TOKEN = os.getenv("INFLUXDB_TOKEN")
 INFLUXDB_ORG = os.getenv("INFLUXDB_ORG")
 INFLUXDB_BUCKET = os.getenv("INFLUXDB_BUCKET")
