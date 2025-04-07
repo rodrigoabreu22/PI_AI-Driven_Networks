@@ -1,0 +1,213 @@
+version: "3.8"
+name: ndap
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.4
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - 22181:2181
+  
+  kafka:
+    image: confluentinc/cp-kafka:7.4.4
+    depends_on:
+      - zookeeper
+    ports:
+      - 29092:29092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_LOG_RETENTION_MS: 10000
+      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 5000
+
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop:4.0.2
+    ports:
+      - "9009:9000"
+    environment:
+      KAFKA_BROKERCONNECT: "kafka:9092" # Kafka Broker Network Addresses (host:port,host:port)
+      SERVER_SERVLET_CONTEXTPATH: "/"
+
+  influxdb_raw:
+    image: influxdb:2.7
+    container_name: influxdb_raw
+    restart: always
+    ports:
+      - "8087:8086"
+    env_file:
+      - .env
+    environment:
+      - INFLUXDB_INIT_MODE=setup
+      - INFLUXDB_INIT_USERNAME=${INFLUXDB_USERNAME}
+      - INFLUXDB_INIT_PASSWORD=${INFLUXDB_PASSWORD}
+      - INFLUXDB_INIT_ORG=${INFLUXDB_ORG}
+      - INFLUXDB_INIT_BUCKET=raw_data
+      - INFLUXDB_INIT_RETENTION=0
+      - INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_TOKEN}
+    volumes:
+      - influxdb2-raw-data:/var/lib/influxdb2
+      - influxdb2-raw-config:/etc/influxdb2
+
+  influxdb_processed:
+    image: influxdb:2.7
+    container_name: influxdb_processed
+    restart: always
+    ports:
+      - "8086:8086"  # Different port
+    env_file:
+      - .env
+    environment:
+      - INFLUXDB_INIT_MODE=setup
+      - INFLUXDB_INIT_USERNAME=${INFLUXDB_USERNAME}
+      - INFLUXDB_INIT_PASSWORD=${INFLUXDB_PASSWORD}
+      - INFLUXDB_INIT_ORG=${INFLUXDB_ORG}
+      - INFLUXDB_INIT_BUCKET=processed_data
+      - INFLUXDB_INIT_RETENTION=0
+      - INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB2_TOKEN}
+    volumes:
+      - influxdb2-processed-data:/var/lib/influxdb2
+      - influxdb2-processed-config:/etc/influxdb2
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse
+    restart: always
+    ports:
+      - "${CLICKHOUSE_PORT_HTTP}"
+      - "${CLICKHOUSE_PORT_NATIVE}"
+    env_file:
+      - .env
+    environment:
+      - CLICKHOUSE_DB=${CLICKHOUSE_DB}
+      - CLICKHOUSE_USER=${CLICKHOUSE_USER}
+      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+
+  chronograf:
+    image: chronograf:latest
+    container_name: chronograf
+    restart: always
+    ports:
+      - "8888:8888"
+    depends_on:
+      - influxdb_processed
+    command: --influxdb-url=http://influxdb_processed:8086/
+    volumes:
+      - chronograf_data:/var/lib/chronograf
+
+  data_raw_storer:
+    build: 
+      context: .
+      dockerfile: ./src/ndap/data_storage/Dockerfile.dbraw
+    container_name: data_raw_storer
+    restart: always
+    depends_on:
+      - influxdb_raw
+      - kafka
+    env_file:
+      - .env
+    environment:
+      - INFLUXDB_URL=http://influxdb_raw:8087
+      - INFLUXDB_BUCKET=${INFLUXDB_BUCKET}
+      - INFLUXDB_ORG=${INFLUXDB_ORG}
+      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+    volumes:
+      - ./logs:/app/logs
+  
+  data_raw_extractor:
+    build: 
+      context: .
+      dockerfile: ./src/ndap/data_storage/Dockerfile.extractor
+    container_name: data_raw_extractor
+    restart: always
+    depends_on:
+      - influxdb_raw
+      - kafka
+    env_file:
+      - .env
+    environment:
+      - INFLUXDB_URL=http://influxdb_raw:8087
+      - INFLUXDB_BUCKET=${INFLUXDB_BUCKET}
+      - INFLUXDB_ORG=${INFLUXDB_ORG}
+      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+    volumes:
+      - ./logs:/app/logs
+      - .:/app
+
+  dashboard_interface:
+    build: 
+      context: .
+      dockerfile: ./src/ndap/dashboard_interface/Dockerfile
+    container_name: dashboard_interface
+    restart: always
+    depends_on:
+      - kafka
+      - influxdb_processed
+    env_file:
+      - .env
+    environment:
+      - INFLUXDB2_ORG=${INFLUXDB2_ORG}
+      - INFLUXDB2_TOKEN=${INFLUXDB2_TOKEN}
+    volumes:
+      - ./logs:/app/logs
+
+  data_processor:
+    build: 
+      context: .
+      dockerfile: ./src/ndap/data_processor/Dockerfile
+    container_name: data_processor
+    restart: always
+    depends_on:
+      - kafka
+    volumes:
+      - ./logs:/app/logs
+
+  data_producer:
+    build: 
+      context: .
+      dockerfile: ./src/ndap/data_producer/Dockerfile
+    container_name: data_producer
+    restart: always
+    depends_on:
+      - kafka
+    volumes:
+      - ./dataset_files:/app/dataset_files
+      - ./logs:/app/logs
+    
+  data_receiver:
+    build: 
+      context: .
+      dockerfile: ./src/ndap/data_receiver/Dockerfile
+    container_name: data_receiver
+    restart: always
+    depends_on:
+      - kafka
+    volumes:
+      - ./logs:/app/logs
+  
+  data_relay:
+    build: 
+      context: .
+      dockerfile: ./src/ndap/data_relay/Dockerfile
+    container_name: data_relay
+    restart: always
+    depends_on:
+      - kafka
+    volumes:
+      - ./logs:/app/logs
+
+volumes:
+  influxdb2-raw-data:
+  influxdb2-raw-config:
+  influxdb2-processed-data:
+  influxdb2-processed-config:
+  clickhouse_data:
+  chronograf_data:

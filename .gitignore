@@ -1,0 +1,7 @@
+venv/
+.env*
+*.log
+*.pcap
+*.csv
+*.json
+last_timestamp.txt
