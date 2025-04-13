@@ -104,6 +104,18 @@ services:
     volumes:
       - chronograf_data:/var/lib/chronograf
 
+  data_storage_middleware:
+    build:
+      context: .
+      dockerfile: ./src/ndap/data_storage/Dockerfile.storage_middleware
+    container_name: data_storage_middleware
+    restart: always
+    depends_on:
+      - kafka
+      - clickhouse
+    volumes:
+      - ./logs:/app/logs
+
   data_raw_storer:
     build: 
       context: .

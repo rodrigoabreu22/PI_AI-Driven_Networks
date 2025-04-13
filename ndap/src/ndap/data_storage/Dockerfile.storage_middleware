@@ -1,0 +1,9 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+COPY ./src/ndap/data_storage/data_storage_middleware.py .
+
+RUN pip install kafka-python clickhouse-driver
+
+CMD ["python", "data_storage_middleware.py"]
