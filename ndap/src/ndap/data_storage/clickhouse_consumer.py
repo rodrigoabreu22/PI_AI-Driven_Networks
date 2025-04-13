@@ -103,7 +103,7 @@ def consume_and_insert():
     client = get_clickhouse_client()
 
     batch = []
-    batch_size = 50  # Tune this based on performance tests
+    batch_size = 1  # Tune this based on performance tests
 
     logging.info("Kafka consumer started. Listening for messages...")
 
