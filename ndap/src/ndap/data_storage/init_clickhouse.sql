@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS default.network_data (
     DNS_TTL_ANSWER Float32,
     FTP_COMMAND_RET_CODE UInt16,
 
-    Label String,
+    Label UInt8,
     Attack String
 ) ENGINE = MergeTree()
 ORDER BY id;

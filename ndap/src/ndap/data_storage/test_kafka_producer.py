@@ -50,8 +50,8 @@ data = {
     "DNS_QUERY_TYPE": 0,
     "DNS_TTL_ANSWER": 331.0,
     "FTP_COMMAND_RET_CODE": 0,
-    "Label": "Benign",
-    "Attack": ""
+    "Label": 0,
+    "Attack": "Benign"
 }
 
 producer.send("PROCESSED_NETWORK_DATA", value=data)
