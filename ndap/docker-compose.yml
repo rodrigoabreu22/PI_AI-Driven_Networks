@@ -100,8 +100,10 @@ services:
     depends_on:
       - influxdb_processed
     command: --influxdb-url=http://influxdb_processed:8086/
+    environment:
+      - BOLT_PATH=/var/lib/chronograf/chronograf-v1.db
     volumes:
-      - chronograf_data:/var/lib/chronograf
+      - chronograf_data:/var/lib/chronograf/
 
   data_raw_storer:
     build: 
