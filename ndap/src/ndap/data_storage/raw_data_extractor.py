@@ -1,6 +1,7 @@
 import time
 from influxdb_client import InfluxDBClient
 from kafka import KafkaProducer
+from kafka.admin import KafkaAdminClient, NewTopic
 from dotenv import load_dotenv
 import os
 import json
@@ -14,7 +15,7 @@ INFLUXDB_URL = os.getenv("INFLUXDB_URL")
 INFLUXDB_TOKEN = os.getenv("INFLUXDB_TOKEN")
 INFLUXDB_ORG = os.getenv("INFLUXDB_ORG")
 INFLUXDB_BUCKET = os.getenv("INFLUXDB_BUCKET")
-KAFKA_TOPIC = "data_to_be_processed"
+KAFKA_TOPIC = "DATA_TO_BE_PROCESSED"
 KAFKA_BROKER = 'localhost:29092'
 CHECK_INTERVAL = 10  
 EMPTY_DB_WAIT_TIME = 5  
@@ -22,6 +23,26 @@ EMPTY_DB_WAIT_TIME = 5
 # Initialize InfluxDB client
 client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
 query_api = client.query_api()
+
+def create_topic(topic_name, broker, num_partitions=1, replication_factor=1):
+    """
+    Ensure the Kafka topic exists; create it if it does not.
+    """
+    admin_client = None
+    try:
+        admin_client = KafkaAdminClient(bootstrap_servers=broker)
+        existing_topics = admin_client.list_topics()
+        if topic_name in existing_topics:
+            logging.info(f"Topic '{topic_name}' already exists.")
+        else:
+            topic = NewTopic(name=topic_name, num_partitions=num_partitions, replication_factor=replication_factor)
+            admin_client.create_topics([topic])
+            logging.info(f"Topic '{topic_name}' created successfully.")
+    except Exception as e:
+        print(f"Failed to create topic '{topic_name}': {e}")
+    finally:
+        if admin_client is not None:
+            admin_client.close()
 
 # Initialize Kafka producer
 producer = KafkaProducer(
@@ -84,6 +105,7 @@ def main():
     """Main function that continuously checks for new data and pushes it to Kafka."""
     initialize_logging()
     logging.info("Starting InfluxDB data extraction...")
+    create_topic(KAFKA_TOPIC, KAFKA_BROKER)
 
     while True:
         try:
