@@ -6,7 +6,7 @@ from kafka.admin import KafkaAdminClient, NewTopic
 
 TOPIC_RECEIVE = "PROCESSED_NETWORK_DATA"
 TOPIC_PUSH = "RELAY_NETWORK_CRONOGRAF_DATA"
-BROKER = 'localhost:29092'
+BROKER = 'kafka:9092'
 
 def create_topic(topic_name, broker, num_partitions=1, replication_factor=1):
     """
