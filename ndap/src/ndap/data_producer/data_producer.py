@@ -9,7 +9,7 @@ from scapy.utils import wrpcap
 from scapy.all import *
 
 TOPIC = "RAW_NETWORK_DATA"
-BROKER = 'localhost:29092'
+BROKER = 'kafka:9092'
 
 def create_topic(topic_name, broker, num_partitions=1, replication_factor=1):
     """
