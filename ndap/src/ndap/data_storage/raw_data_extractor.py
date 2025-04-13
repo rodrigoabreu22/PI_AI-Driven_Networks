@@ -10,12 +10,12 @@ from datetime import datetime, timezone
 load_dotenv()
 
 # Configurations
-INFLUXDB_URL = os.getenv("INFLUXDB_URL")
+INFLUXDB_URL = 'http://influxdb_raw:8086'
 INFLUXDB_TOKEN = os.getenv("INFLUXDB_TOKEN")
 INFLUXDB_ORG = os.getenv("INFLUXDB_ORG")
 INFLUXDB_BUCKET = os.getenv("INFLUXDB_BUCKET")
-KAFKA_TOPIC = "data_to_be_processed"
-KAFKA_BROKER = 'localhost:29092'
+KAFKA_TOPIC = "DATA_TO_BE_PROCESSED"
+KAFKA_BROKER = 'kafka:9092'
 CHECK_INTERVAL = 10  
 EMPTY_DB_WAIT_TIME = 5  
 

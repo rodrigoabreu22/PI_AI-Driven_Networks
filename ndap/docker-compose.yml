@@ -142,7 +142,6 @@ services:
       - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
     volumes:
       - ./logs:/app/logs
-      - .:/app
 
   dashboard_interface:
     build: 
