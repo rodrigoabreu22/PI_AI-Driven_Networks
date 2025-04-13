@@ -1,19 +1,7 @@
 import subprocess
 import pandas as pd
 import time
-from influxdb_client import InfluxDBClient
 import pandas as pd
-
-
-
-# Change to match your InfluxDB settings
-INFLUXDB_URL = "http://influxdb_container_name:8086"
-TOKEN = "your_token"
-ORG = "your_org"
-BUCKET = "ground_truth"
-
-client = InfluxDBClient(url=INFLUXDB_URL, token=TOKEN, org=ORG)
-query_api = client.query_api()
 
 def run_nprobe(input_pcap):
     time_now = time.strftime("%Y/%m/%d/%H/%M")
@@ -41,39 +29,4 @@ if __name__ == "__main__":
 
 
 def addGT(csv_file):
-    df = pd.read_csv(csv_file)
-
-    labels = []
-    attacks = []
-
-    for _, row in df.iterrows():
-        query = f'''
-        from(bucket: "{BUCKET}")
-        |> range(start: -30d)
-        |> filter(fn: (r) => r.IPV4_SRC_ADDR == "{row['IPV4_SRC_ADDR']}" 
-            and r.L4_SRC_PORT == "{row['L4_SRC_PORT']}"
-            and r.IPV4_DST_ADDR == "{row['IPV4_DST_ADDR']}"
-            and r.IN_BYTES == "{row['IN_BYTES']}"
-            and r.IN_PKTS == "{row['IN_PKTS']}"
-            and r.OUT_BYTES == "{row['OUT_BYTES']}"
-            and r.OUT_PKTS == "{row['OUT_PKTS']}")
-        |> limit(n:1)
-        '''
-
-        tables = query_api.query(query, org=ORG)
-
-        if tables:
-            for table in tables:
-                for record in table.records:
-                    labels.append(record.values.get("Label", "Unknown"))
-                    attacks.append(record.values.get("Attack", "Unknown"))
-                    break
-        else:
-            labels.append("Unknown")
-            attacks.append("Unknown")
-
-    df["Label"] = labels
-    df["Attack"] = attacks
-    df.to_csv(csv_file, index=False)
-    print("Ground truth added successfully!")
-
+    pass
