@@ -1,6 +1,8 @@
 CREATE TABLE IF NOT EXISTS default.network_data (
     id UUID DEFAULT generateUUIDv4(),
 
+    FLOW_START_MILLISECONDS UInt64,
+    FLOW_END_MILLISECONDS UInt64,
     IPV4_SRC_ADDR String,
     L4_SRC_PORT UInt16,
     IPV4_DST_ADDR String,

@@ -48,6 +48,8 @@ def transform_row(row):
             return default
 
     transformed = {
+        "FLOW_START_MILLISECONDS": safe_cast(row.get("FLOW_START_MILLISECONDS"), int),
+        "FLOW_END_MILLISECONDS": safe_cast(row.get("FLOW_END_MILLISECONDS"), int),
         "IPV4_SRC_ADDR": str(row.get("IPV4_SRC_ADDR", "")),
         "L4_SRC_PORT": safe_cast(row.get("L4_SRC_PORT"), int),
         "IPV4_DST_ADDR": str(row.get("IPV4_DST_ADDR", "")),
