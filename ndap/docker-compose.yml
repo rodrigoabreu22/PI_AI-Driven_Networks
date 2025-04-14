@@ -90,6 +90,7 @@ services:
       - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
     volumes:
       - clickhouse_data:/var/lib/clickhouse
+      - ./src/ndap/data_storage/init_clickhouse.sql:/docker-entrypoint-initdb.d/init.sql
 
   chronograf:
     image: chronograf:latest
@@ -108,6 +109,18 @@ services:
       - BOLT_PATH=/var/lib/chronograf/chronograf-v1.db
     volumes:
       - chronograf_data:/var/lib/chronograf/
+
+  data_storage_middleware:
+    build:
+      context: .
+      dockerfile: ./src/ndap/data_storage/Dockerfile.storage_middleware
+    container_name: data_storage_middleware
+    restart: always
+    depends_on:
+      - kafka
+      - clickhouse
+    volumes:
+      - ./logs:/app/logs
 
   data_raw_storer:
     build: 

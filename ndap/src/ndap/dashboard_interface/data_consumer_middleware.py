@@ -32,21 +32,9 @@ def create_kafka_consumer():
     )
     return consumer
 
-def convert_unix_to_rfc3339(unix_timestamp):
-    """Convert Unix timestamp (seconds) to RFC3339 format."""
-    try:
-        dt = datetime.fromtimestamp(int(unix_timestamp), tz=timezone.utc)
-        return dt.isoformat()
-    except (ValueError, TypeError):
-        return None
-
 def store_data(data):
     """Writes processed data to InfluxDB."""
-    unix_timestamp = data.get("timestamp_unix", None)
-    timestamp = convert_unix_to_rfc3339(unix_timestamp)
-    if not timestamp:
-        logging.warning("No valid timestamp found, skipping entry.")
-        return
+    timestamp = datetime.now(timezone.utc).isoformat()
 
     point = Point("network_processed_data").time(timestamp, WritePrecision.NS).tag("source", "kafka")
     
