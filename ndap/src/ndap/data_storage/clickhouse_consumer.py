@@ -8,8 +8,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TOPIC = "PROCESSED_NETWORK_DATA"
-BROKER = 'localhost:29092'
-CLICKHOUSE_HOST = 'localhost'
+BROKER = 'kafka:9092'
+CLICKHOUSE_HOST = 'clickhouse'
 CLICKHOUSE_PORT = 8123
 CLICKHOUSE_USER = os.getenv("CLICKHOUSE_USER")
 CLICKHOUSE_PASSWORD = os.getenv("CLICKHOUSE_PASSWORD")
