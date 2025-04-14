@@ -34,12 +34,16 @@ def move_csv_files():
                 start_index = 0
 
                 if first_file:
-                    # Write header as-is
                     outfile.write(lines[0])
                     first_file = False
-                    start_index = 1  # Start from data rows
+                    start_index = 1
+                else:
+                    # For subsequent files, always skip first line (header)
+                    start_index = 1
 
                 for line in lines[start_index:]:
+                    if "FLOW_START" in line or "IPV4_SRC_ADDR" in line:
+                        continue  # skip accidental headers
                     fields = line.strip().split(",")
                     if len(fields) < 2:
                         continue  # skip malformed lines
@@ -49,6 +53,8 @@ def move_csv_files():
 
     shutil.rmtree("./features")
     os.makedirs("./features")
+
+    
 def analyze_output(csv_file):
     try:
         df = pd.read_csv(csv_file, delimiter=",")
@@ -58,6 +64,13 @@ def analyze_output(csv_file):
         print("Error loading CSV:", e)
 
 def addGT(csv_file):
+    protocol_map = {
+        'tcp': '6',
+        'udp': '17',
+        'icmp': '1',
+        'icmpv6': '58'
+    }
+
     gt_df = pd.read_csv("NUSW-NB15_GT.csv", usecols=[
         'Start time', 'Last time', 'Protocol',
         'Source IP', 'Source Port',
@@ -65,7 +78,10 @@ def addGT(csv_file):
         'Attack category'
     ])
 
-    # Rename GT columns to match temp.flows style
+    # Standardize protocol
+    gt_df['Protocol'] = gt_df['Protocol'].str.lower().map(protocol_map)
+
+    # Rename columns to match flow file
     gt_df.rename(columns={
         'Start time': 'FLOW_START_MILLISECONDS',
         'Last time': 'FLOW_END_MILLISECONDS',
@@ -76,32 +92,27 @@ def addGT(csv_file):
         'Destination Port': 'L4_DST_PORT'
     }, inplace=True)
 
-
-    # Convert all matching columns to string to ensure consistent merge
     match_cols = [
-    'FLOW_START_MILLISECONDS', 'FLOW_END_MILLISECONDS', 'PROTOCOL',
-    'IPV4_SRC_ADDR', 'L4_SRC_PORT', 'IPV4_DST_ADDR', 'L4_DST_PORT'
+        'FLOW_START_MILLISECONDS', 'FLOW_END_MILLISECONDS', 'PROTOCOL',
+        'IPV4_SRC_ADDR', 'L4_SRC_PORT', 'IPV4_DST_ADDR', 'L4_DST_PORT'
     ]
 
     gt_df[match_cols] = gt_df[match_cols].astype(str)
 
-    # Load temp flows
-    temp_df = pd.read_csv("temp.flows", sep=",")
-    print(temp_df.columns.tolist())
+    temp_df = pd.read_csv(csv_file, sep=",")
     temp_df[match_cols] = temp_df[match_cols].astype(str)
 
-    # Merge on matching columns
     merged = temp_df.merge(gt_df, on=match_cols, how='left')
 
-    # Set 'target' and fill missing attack categories
-    merged['target'] = merged['Attack category'].notna().astype(int)
-    merged['attack_category'] = merged['Attack category'].fillna('Benign')
+    # Rename & add label columns
+    merged['Label'] = merged['Attack category'].notna().astype(int)
+    merged['Attack'] = merged['Attack category'].fillna('Benign')
     merged.drop(columns=['Attack category'], inplace=True)
 
-    # Save to extracted.flows with same format as temp.flows
+    # Save cleaned output
     merged.to_csv("extracted.flows", index=False)
-    # Remove temp.flows
     os.remove(csv_file)
+    
 
 
 if __name__ == "__main__":
