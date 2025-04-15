@@ -56,6 +56,7 @@ services:
       - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
     volumes:
       - clickhouse_data:/var/lib/clickhouse
+      - ./init_clickhouse.sql:/docker-entrypoint-initdb.d/init.sql
 
   chronograf:
     image: chronograf:latest
