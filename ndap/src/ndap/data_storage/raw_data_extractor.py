@@ -141,10 +141,13 @@ def main():
                     time_obj = record.get_time()
                     raw_data_str = record.get_value()  # Assuming it's a hex or base64-encoded string
                     timestamp_str = time_obj.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+                    timestamp_float = time_obj.timestamp()
+
 
                     packets.append({
                         "raw_data": raw_data_str,
-                        "timestamp": timestamp_str
+                        "timestamp": timestamp_str,
+                        "timestamp_float": timestamp_float
                     })
 
             if packets:
@@ -159,7 +162,7 @@ def main():
                         continue
 
                     # Use timestamp as header
-                    headers = [('timestamp', timestamp_str.encode('utf-8'))]
+                    headers = [('timestamp', str(timestamp_float).encode('utf-8'))]
 
                     # Send to Kafka
                     producer.send(KAFKA_TOPIC, pkt_bytes, headers=headers)

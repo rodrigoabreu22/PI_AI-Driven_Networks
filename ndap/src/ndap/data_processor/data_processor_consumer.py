@@ -69,6 +69,13 @@ def receive_and_store_data():
                     try:
                         original_ts = None
 
+                        if message.headers:
+                            for key, value in message.headers:
+                                if key == 'timestamp':
+                                    original_ts = float(value.decode('utf-8'))
+                                    break
+
+
                         packet = bytes_to_scapy(message.value, original_ts)
                         packet_batch.append(packet)
 

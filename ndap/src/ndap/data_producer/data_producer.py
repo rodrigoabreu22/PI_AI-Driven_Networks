@@ -134,10 +134,10 @@ def get_pcap_data(pcap_file):
                 logging.info(f"Could not convert packet to JSON: {e}")
                 continue
             
-            time.sleep(0.01) 
+            time.sleep(0.1) 
 
 def main():
-    PCAP_FILE_PATH = "3.pcap"
+    PCAP_FILE_PATH = "packet_batch.pcap"
     logging.basicConfig(
         filename='logs/data_producer.log', 
         level=logging.INFO,
