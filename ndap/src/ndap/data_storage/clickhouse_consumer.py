@@ -136,5 +136,5 @@ def insert_batch(client, rows):
         logging.error(f"Error inserting batch into ClickHouse: {e}")
 
 if __name__ == "__main__":
-    logging.basicConfig(filename='clickhouse_consumer.log', level=logging.INFO)
+    logging.basicConfig(filename='logs/clickhouse_consumer.log', level=logging.INFO)
     consume_and_insert()
