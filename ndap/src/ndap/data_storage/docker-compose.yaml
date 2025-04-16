@@ -58,19 +58,6 @@ services:
       - clickhouse_data:/var/lib/clickhouse
       - ./init_clickhouse.sql:/docker-entrypoint-initdb.d/init.sql
 
-  data_ingest:
-    build: .
-    container_name: data_ingest
-    restart: on-failure
-    depends_on:
-      - influxdb_raw
-    environment:
-      - INFLUXDB_URL=http://influxdb_raw:8087
-    volumes:
-      - ./ground_truth_insert.py:/app/ground_truth_insert.py
-      - ./NUSW-NB15_GT.csv:/app/NUSW-NB15_GT.csv
-    command: ["python", "/app/ground_truth_insert.py"]
-
   chronograf:
     image: chronograf:latest
     container_name: chronograf
@@ -79,9 +66,15 @@ services:
       - "8888:8888"
     depends_on:
       - influxdb_processed
-    command: --influxdb-url=http://influxdb_processed:8086/
+    command: >
+      chronograf
+      --influxdb-url=http://influxdb_processed:8086/
+      --influxdb-org=${INFLUXDB2_ORG}
+      --influxdb-token=${INFLUXDB2_TOKEN}
+    environment:
+      - BOLT_PATH=/var/lib/chronograf/chronograf-v1.db
     volumes:
-      - chronograf_data:/var/lib/chronograf
+      - chronograf_data:/var/lib/chronograf/
 
 volumes:
   influxdb2-raw-data:
