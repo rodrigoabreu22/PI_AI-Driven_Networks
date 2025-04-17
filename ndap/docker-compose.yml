@@ -125,6 +125,8 @@ services:
         condition: service_healthy
       clickhouse:
         condition: service_started
+    env_file:
+      - .env
     volumes:
       - ./logs:/app/logs
 
