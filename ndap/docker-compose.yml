@@ -25,7 +25,11 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_LOG_RETENTION_MS: 10000
       KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 5000
-
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   kafdrop:
     image: obsidiandynamics/kafdrop:4.0.2
@@ -90,6 +94,7 @@ services:
       - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
     volumes:
       - clickhouse_data:/var/lib/clickhouse
+      - ./src/ndap/data_storage/init_clickhouse.sql:/docker-entrypoint-initdb.d/init.sql
 
   chronograf:
     image: chronograf:latest
@@ -99,9 +104,31 @@ services:
       - "8888:8888"
     depends_on:
       - influxdb_processed
-    command: --influxdb-url=http://influxdb_processed:8086/
+    command: >
+      chronograf
+      --influxdb-url=http://influxdb_processed:8086/
+      --influxdb-org=${INFLUXDB2_ORG}
+      --influxdb-token=${INFLUXDB2_TOKEN}
+    environment:
+      - BOLT_PATH=/var/lib/chronograf/chronograf-v1.db
     volumes:
-      - chronograf_data:/var/lib/chronograf
+      - chronograf_data:/var/lib/chronograf/
+
+  data_storage_middleware:
+    build:
+      context: .
+      dockerfile: ./src/ndap/data_storage/Dockerfile.storage_middleware
+    container_name: data_storage_middleware
+    restart: always
+    depends_on:
+      kafka:
+        condition: service_healthy
+      clickhouse:
+        condition: service_started
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
 
   data_raw_storer:
     build: 
@@ -110,8 +137,10 @@ services:
     container_name: data_raw_storer
     restart: always
     depends_on:
-      - influxdb_raw
-      - kafka
+      influxdb_raw:
+        condition: service_started
+      kafka:
+        condition: service_healthy
     env_file:
       - .env
     environment:
@@ -129,8 +158,10 @@ services:
     container_name: data_raw_extractor
     restart: always
     depends_on:
-      - influxdb_raw
-      - kafka
+      influxdb_raw:
+        condition: service_started
+      kafka:
+        condition: service_healthy
     env_file:
       - .env
     environment:
@@ -140,7 +171,6 @@ services:
       - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
     volumes:
       - ./logs:/app/logs
-      - .:/app
 
   dashboard_interface:
     build: 
@@ -149,8 +179,10 @@ services:
     container_name: dashboard_interface
     restart: always
     depends_on:
-      - kafka
-      - influxdb_processed
+      kafka:
+        condition: service_healthy
+      influxdb_processed:
+        condition: service_started
     env_file:
       - .env
     environment:
@@ -166,7 +198,8 @@ services:
     container_name: data_processor
     restart: always
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     volumes:
       - ./logs:/app/logs
 
@@ -177,7 +210,8 @@ services:
     container_name: data_producer
     restart: always
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     volumes:
       - ./dataset_files:/app/dataset_files
       - ./logs:/app/logs
@@ -189,7 +223,8 @@ services:
     container_name: data_receiver
     restart: always
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     volumes:
       - ./logs:/app/logs
   
@@ -200,7 +235,8 @@ services:
     container_name: data_relay
     restart: always
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     volumes:
       - ./logs:/app/logs
 

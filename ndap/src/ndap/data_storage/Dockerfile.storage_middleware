@@ -1,0 +1,13 @@
+FROM python:3.12
+
+WORKDIR /app
+
+COPY ./src/ndap/data_storage/clickhouse_consumer.py /app
+
+RUN pip install kafka-python 
+RUN pip install clickhouse-driver
+RUN pip install clickhouse-connect
+RUN pip install kafka-python
+RUN pip install python-dotenv
+
+CMD ["python", "clickhouse_consumer.py"]

@@ -8,12 +8,12 @@ from dotenv import load_dotenv
 
 # Kafka Configuration
 TOPIC_RECEIVE = "RELAY_NETWORK_CRONOGRAF_DATA"
-BROKER = 'localhost:29092'
+BROKER = 'kafka:9092'
 
 load_dotenv()
 
 # InfluxDB Configuration
-INFLUXDB_URL = "http://localhost:8086"
+INFLUXDB_URL = "http://influxdb_processed:8086"
 INFLUXDB2_TOKEN = os.getenv("INFLUXDB2_TOKEN")
 INFLUXDB2_ORG = os.getenv("INFLUXDB2_ORG")
 INFLUXDB_BUCKET = "processed_data"
@@ -32,21 +32,9 @@ def create_kafka_consumer():
     )
     return consumer
 
-def convert_unix_to_rfc3339(unix_timestamp):
-    """Convert Unix timestamp (seconds) to RFC3339 format."""
-    try:
-        dt = datetime.fromtimestamp(int(unix_timestamp), tz=timezone.utc)
-        return dt.isoformat()
-    except (ValueError, TypeError):
-        return None
-
 def store_data(data):
     """Writes processed data to InfluxDB."""
-    unix_timestamp = data.get("timestamp_unix", None)
-    timestamp = convert_unix_to_rfc3339(unix_timestamp)
-    if not timestamp:
-        logging.warning("No valid timestamp found, skipping entry.")
-        return
+    timestamp = datetime.now(timezone.utc).isoformat()
 
     point = Point("network_processed_data").time(timestamp, WritePrecision.NS).tag("source", "kafka")
     
