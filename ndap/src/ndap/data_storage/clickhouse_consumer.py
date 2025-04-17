@@ -72,8 +72,6 @@ def transform_row(row):
         "SHORTEST_FLOW_PKT": safe_cast(row.get("SHORTEST_FLOW_PKT"), int),
         "MIN_IP_PKT_LEN": safe_cast(row.get("MIN_IP_PKT_LEN"), int),
         "MAX_IP_PKT_LEN": safe_cast(row.get("MAX_IP_PKT_LEN"), int),
-        "SRC_TO_DST_SECOND_BYTES": safe_cast(row.get("SRC_TO_DST_SECOND_BYTES"), float),
-        "DST_TO_SRC_SECOND_BYTES": safe_cast(row.get("DST_TO_SRC_SECOND_BYTES"), float),
         "RETRANSMITTED_IN_BYTES": safe_cast(row.get("RETRANSMITTED_IN_BYTES"), int),
         "RETRANSMITTED_IN_PKTS": safe_cast(row.get("RETRANSMITTED_IN_PKTS"), int),
         "RETRANSMITTED_OUT_BYTES": safe_cast(row.get("RETRANSMITTED_OUT_BYTES"), int),

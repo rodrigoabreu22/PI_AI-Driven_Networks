@@ -174,6 +174,3 @@ def processor_main(file):
     move_csv_files()
     addGT("temp.flows")
     send_data() 
-
-if __name__ == "__main__":
-    processor_main("a.pcap")
