@@ -9,11 +9,11 @@ import base64
 
 # Configuration
 TOPIC_RAW_DATA_RCV = "RAW_NETWORK_DATA_RECEIVED"
-BROKER = 'localhost:29092'
+BROKER = 'kafka:9092'
 
 load_dotenv()
 
-INFLUXDB_URL = os.getenv("INFLUXDB_URL")
+INFLUXDB_URL = "http://influxdb_raw:8086"
 INFLUXDB_TOKEN = os.getenv("INFLUXDB_TOKEN")
 INFLUXDB_ORG = os.getenv("INFLUXDB_ORG")
 INFLUXDB_BUCKET = os.getenv("INFLUXDB_BUCKET")

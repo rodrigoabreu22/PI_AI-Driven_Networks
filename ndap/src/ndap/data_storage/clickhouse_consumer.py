@@ -8,8 +8,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TOPIC = "PROCESSED_NETWORK_DATA"
-BROKER = 'localhost:29092'
-CLICKHOUSE_HOST = 'localhost'
+BROKER = 'kafka:9092'
+CLICKHOUSE_HOST = 'clickhouse'
 CLICKHOUSE_PORT = 8123
 CLICKHOUSE_USER = os.getenv("CLICKHOUSE_USER")
 CLICKHOUSE_PASSWORD = os.getenv("CLICKHOUSE_PASSWORD")
@@ -72,8 +72,6 @@ def transform_row(row):
         "SHORTEST_FLOW_PKT": safe_cast(row.get("SHORTEST_FLOW_PKT"), int),
         "MIN_IP_PKT_LEN": safe_cast(row.get("MIN_IP_PKT_LEN"), int),
         "MAX_IP_PKT_LEN": safe_cast(row.get("MAX_IP_PKT_LEN"), int),
-        "SRC_TO_DST_SECOND_BYTES": safe_cast(row.get("SRC_TO_DST_SECOND_BYTES"), float),
-        "DST_TO_SRC_SECOND_BYTES": safe_cast(row.get("DST_TO_SRC_SECOND_BYTES"), float),
         "RETRANSMITTED_IN_BYTES": safe_cast(row.get("RETRANSMITTED_IN_BYTES"), int),
         "RETRANSMITTED_IN_PKTS": safe_cast(row.get("RETRANSMITTED_IN_PKTS"), int),
         "RETRANSMITTED_OUT_BYTES": safe_cast(row.get("RETRANSMITTED_OUT_BYTES"), int),
@@ -136,5 +134,5 @@ def insert_batch(client, rows):
         logging.error(f"Error inserting batch into ClickHouse: {e}")
 
 if __name__ == "__main__":
-    logging.basicConfig(filename='clickhouse_consumer.log', level=logging.INFO)
+    logging.basicConfig(filename='logs/clickhouse_consumer.log', level=logging.INFO)
     consume_and_insert()

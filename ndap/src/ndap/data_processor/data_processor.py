@@ -3,12 +3,71 @@ import pandas as pd
 import time
 import os
 import shutil
+from kafka import KafkaProducer
+from kafka.admin import KafkaAdminClient, NewTopic
+import logging
+import json
+
+TOPIC = "PROCESSED_NETWORK_DATA"
+BROKER = 'kafka:9092'
+
+def create_topic(topic_name, broker, num_partitions=1, replication_factor=1):
+    """
+    Ensure the Kafka topic exists; create it if it does not.
+    """
+    admin_client = None
+    try:
+        admin_client = KafkaAdminClient(bootstrap_servers=broker)
+        
+        # Check if the topic exists
+        existing_topics = admin_client.list_topics()
+        if topic_name in existing_topics:
+            logging.info(f"Topic '{topic_name}' already exists.")
+        else:
+            # Create the topic
+            topic = NewTopic(name=topic_name, num_partitions=num_partitions, replication_factor=replication_factor)
+            admin_client.create_topics([topic])
+            logging.info(f"Topic '{topic_name}' created successfully.")
+    except Exception as e:
+        print(f"Failed to create topic '{topic_name}': {e}")
+    finally:
+        if admin_client is not None:
+            admin_client.close()
+
+def create_kafka_producer():
+    """Creates a Kafka producer for sending raw packet data."""
+    producer = KafkaProducer(
+        bootstrap_servers=BROKER,
+        value_serializer=lambda v: json.dumps(v).encode('utf-8')
+    )
+    logging.info("Kafka producer started.")
+    return producer
+
+def send_to_kafka(producer, topic, data):
+    """Sends data to Kafka."""
+    try:
+        producer.send(topic, data)
+        producer.flush()
+
+    except Exception as e:
+        logging.error(f"Error sending packet: {e}")
+
+
+def send_data():
+    producer = create_kafka_producer()
+    data = pd.read_csv("extracted.flows", sep=",", header=0)
+
+    for row_dict in data.to_dict(orient='records'):
+        logging.info(f"Sending data to Kafka: {row_dict}")
+        send_to_kafka(producer, TOPIC, row_dict)
+
+    os.remove("extracted.flows")
 
 def run_nprobe(input_pcap):
     command = [
         "nprobe", "-i", input_pcap, "-P", "./features", "--csv-separator", ",", "--dont-reforge-timestamps",
         "-V", "9", "-T", 
-        "%FLOW_START_MILLISECONDS %FLOW_END_MILLISECONDS %IPV4_SRC_ADDR %L4_SRC_PORT %IPV4_DST_ADDR %L4_DST_PORT %PROTOCOL %L7_PROTO %IN_BYTES %IN_PKTS %OUT_BYTES %OUT_PKTS %TCP_FLAGS %CLIENT_TCP_FLAGS %SERVER_TCP_FLAGS %FLOW_DURATION_MILLISECONDS %DURATION_IN %DURATION_OUT %MIN_TTL %MAX_TTL %LONGEST_FLOW_PKT %SHORTEST_FLOW_PKT %MIN_IP_PKT_LEN %MAX_IP_PKT_LEN %SRC_TO_DST_SECOND_BYTES %DST_TO_SRC_SECOND_BYTES %RETRANSMITTED_IN_BYTES %RETRANSMITTED_IN_PKTS %RETRANSMITTED_OUT_BYTES %RETRANSMITTED_OUT_PKTS %SRC_TO_DST_AVG_THROUGHPUT %DST_TO_SRC_AVG_THROUGHPUT %NUM_PKTS_UP_TO_128_BYTES %NUM_PKTS_128_TO_256_BYTES %NUM_PKTS_256_TO_512_BYTES %NUM_PKTS_512_TO_1024_BYTES %NUM_PKTS_1024_TO_1514_BYTES %TCP_WIN_MAX_IN %TCP_WIN_MAX_OUT %ICMP_TYPE %ICMP_IPV4_TYPE %DNS_QUERY_ID %DNS_QUERY_TYPE %DNS_TTL_ANSWER %FTP_COMMAND_RET_CODE"
+        "%FLOW_START_MILLISECONDS %FLOW_END_MILLISECONDS %IPV4_SRC_ADDR %L4_SRC_PORT %IPV4_DST_ADDR %L4_DST_PORT %PROTOCOL %L7_PROTO %IN_BYTES %IN_PKTS %OUT_BYTES %OUT_PKTS %TCP_FLAGS %CLIENT_TCP_FLAGS %SERVER_TCP_FLAGS %FLOW_DURATION_MILLISECONDS %DURATION_IN %DURATION_OUT %MIN_TTL %MAX_TTL %LONGEST_FLOW_PKT %SHORTEST_FLOW_PKT %MIN_IP_PKT_LEN %MAX_IP_PKT_LEN %RETRANSMITTED_IN_BYTES %RETRANSMITTED_IN_PKTS %RETRANSMITTED_OUT_BYTES %RETRANSMITTED_OUT_PKTS %SRC_TO_DST_AVG_THROUGHPUT %DST_TO_SRC_AVG_THROUGHPUT %NUM_PKTS_UP_TO_128_BYTES %NUM_PKTS_128_TO_256_BYTES %NUM_PKTS_256_TO_512_BYTES %NUM_PKTS_512_TO_1024_BYTES %NUM_PKTS_1024_TO_1514_BYTES %TCP_WIN_MAX_IN %TCP_WIN_MAX_OUT %ICMP_TYPE %ICMP_IPV4_TYPE %DNS_QUERY_ID %DNS_QUERY_TYPE %DNS_TTL_ANSWER %FTP_COMMAND_RET_CODE"
     ]
     
     subprocess.run(command, stderr=subprocess.PIPE, text=True)
@@ -53,15 +112,6 @@ def move_csv_files():
 
     shutil.rmtree("./features")
     os.makedirs("./features")
-
-    
-def analyze_output(csv_file):
-    try:
-        df = pd.read_csv(csv_file, delimiter=",")
-        print("Data Shape:", df.shape)
-
-    except Exception as e:
-        print("Error loading CSV:", e)
 
 def addGT(csv_file):
     protocol_map = {
@@ -112,18 +162,15 @@ def addGT(csv_file):
     # Save cleaned output
     merged.to_csv("extracted.flows", index=False)
     os.remove(csv_file)
-    
 
-
-if __name__ == "__main__":
-    run_nprobe("1.pcap")
-    print("Waiting for nprobe to finish...")
+def processor_main(file):
+    logging.basicConfig(
+        filename='logs/data_processor.log', 
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s'
+    )
+    create_topic(TOPIC, BROKER)
+    run_nprobe(file)
     move_csv_files()
-    print("CSV files moved and merged.")
-    analyze_output("temp.flows")
-    print("Analyzing output...")
     addGT("temp.flows")
-    print("Ground truth added to extracted.flows.")
-
-
-
+    send_data() 

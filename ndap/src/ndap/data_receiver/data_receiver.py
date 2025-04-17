@@ -8,7 +8,7 @@ from scapy.all import Ether, IP, Raw, CookedLinux
 
 TOPIC_RECEIVE = "RAW_NETWORK_DATA"
 TOPIC_PUSH = "RAW_NETWORK_DATA_RECEIVED"
-BROKER = 'localhost:29092'
+BROKER = 'kafka:9092'
 
 def create_topic(topic_name, broker, num_partitions=1, replication_factor=1):
     try:

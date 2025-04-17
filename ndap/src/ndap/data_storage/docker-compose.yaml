@@ -66,9 +66,15 @@ services:
       - "8888:8888"
     depends_on:
       - influxdb_processed
-    command: --influxdb-url=http://influxdb_processed:8086/
+    command: >
+      chronograf
+      --influxdb-url=http://influxdb_processed:8086/
+      --influxdb-org=${INFLUXDB2_ORG}
+      --influxdb-token=${INFLUXDB2_TOKEN}
+    environment:
+      - BOLT_PATH=/var/lib/chronograf/chronograf-v1.db
     volumes:
-      - chronograf_data:/var/lib/chronograf
+      - chronograf_data:/var/lib/chronograf/
 
 volumes:
   influxdb2-raw-data:

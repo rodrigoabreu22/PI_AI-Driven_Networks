@@ -9,11 +9,11 @@ from scapy.utils import wrpcap
 from scapy.layers.inet import IP, TCP, UDP
 from scapy.layers.l2 import Ether, CookedLinux
 from scapy.packet import Raw, Padding
-
+from data_processor import processor_main
 
 # Configuration
 TOPIC_RAW_DATA_RCV = "DATA_TO_BE_PROCESSED"
-BROKER = 'localhost:29092'
+BROKER = 'kafka:9092'  
 PACKET_BATCH_SIZE = 100
 
 load_dotenv()
@@ -83,6 +83,7 @@ def receive_and_store_data():
                             output_filename = "packet_batch.pcap"
                             wrpcap(output_filename, packet_batch)
                             logging.info(f"Wrote {len(packet_batch)} packets to {output_filename}")
+                            processor_main(output_filename)
                             packet_batch.clear()
                             time.sleep(30)
 
@@ -96,6 +97,7 @@ def receive_and_store_data():
         if packet_batch:
             output_filename = "packet_batch.pcap"
             wrpcap(output_filename, packet_batch)
+            processor_main(output_filename)
             logging.info(f"Wrote remaining {len(packet_batch)} packets to {output_filename}")
 
 

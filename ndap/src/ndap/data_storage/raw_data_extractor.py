@@ -5,18 +5,19 @@ from kafka.admin import KafkaAdminClient, NewTopic
 from dotenv import load_dotenv
 import os
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import base64
+
 
 load_dotenv()
 
 # Configurations
-INFLUXDB_URL = os.getenv("INFLUXDB_URL")
+INFLUXDB_URL = 'http://influxdb_raw:8086'
 INFLUXDB_TOKEN = os.getenv("INFLUXDB_TOKEN")
 INFLUXDB_ORG = os.getenv("INFLUXDB_ORG")
 INFLUXDB_BUCKET = os.getenv("INFLUXDB_BUCKET")
 KAFKA_TOPIC = "DATA_TO_BE_PROCESSED"
-KAFKA_BROKER = 'localhost:29092'
+KAFKA_BROKER = 'kafka:9092'
 CHECK_INTERVAL = 10  
 EMPTY_DB_WAIT_TIME = 5  
 
@@ -65,13 +66,21 @@ def load_last_timestamp():
     """Load last processed timestamp from file, or fetch from InfluxDB if missing."""
     try:
         with open("last_timestamp.txt", "r") as f:
-            return f.read().strip()
+            last_processed_timestamp = f.read().strip()
+
+            # Convert last processed timestamp to datetime and add 1 microsecond to avoid reprocessing the same data
+            last_dt = datetime.strptime(last_processed_timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+            new_start_dt = last_dt + timedelta(microseconds=1)
+            new_start_timestamp = new_start_dt.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+
+            return new_start_timestamp
         
     except FileNotFoundError:
         return fetch_earliest_timestamp()
 
 def save_last_timestamp(timestamp):
     """Save the last processed timestamp to a file."""
+    logging.info(f"Saving last processed timestamp: {str(timestamp)}")
     with open("last_timestamp.txt", "w") as f:
         f.write(str(timestamp))
 
