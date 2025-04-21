@@ -127,14 +127,14 @@ def get_pcap_data(pcap_file):
             send_to_kafka(producer, TOPIC, packet)
             
             # Convert to JSON and log
-            try:
-                packet_json = json.dumps(packet_dict, indent=2)
-                logging.info(f"Packet data:\n{packet_json}")
-            except Exception as e:
-                logging.info(f"Could not convert packet to JSON: {e}")
-                continue
+            #try:
+            #    packet_json = json.dumps(packet_dict, indent=2)
+            #    logging.info(f"Packet data:\n{packet_json}")
+            #except Exception as e:
+            #    logging.info(f"Could not convert packet to JSON: {e}")
+            #    continue
             
-            time.sleep(0.1) 
+            time.sleep(0.001) 
 
 def main():
     PCAP_FILE_PATH = "dataset_files/1.pcap"
