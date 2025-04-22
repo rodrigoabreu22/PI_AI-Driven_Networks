@@ -133,8 +133,8 @@ def get_pcap_data(pcap_file):
             #except Exception as e:
             #    logging.info(f"Could not convert packet to JSON: {e}")
             #    continue
-            
-            time.sleep(0.001) 
+            #
+            #time.sleep(0.001) 
 
 def main():
     PCAP_FILE_PATH = "dataset_files/1.pcap"

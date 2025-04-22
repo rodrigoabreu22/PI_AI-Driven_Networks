@@ -93,7 +93,7 @@ def train_and_compare_classifiers(df):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     classifiers = {
-        "Random Forest": RandomForestClassifier(n_estimators=100, random_state=42, class_weight='balanced'),
+        "Random Forest": RandomForestClassifier(n_estimators=100, random_state=42),
         "Gradient Boosting": GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, random_state=42),
         "MLP (Neural Network)": MLPClassifier(hidden_layer_sizes=(100,), max_iter=300, random_state=42)
     }
@@ -105,7 +105,7 @@ def train_and_compare_classifiers(df):
         clf.fit(X_train, y_train)
         y_pred = clf.predict(X_test)
         logging.info(f"\n--- Classification Report: {name} ---")
-        logging.info(classification_report(y_test, y_pred, zero_division=0))
+        logging.info(f"\n{classification_report(y_test, y_pred, zero_division=0)}")
         models[name] = clf
 
     return models
@@ -117,7 +117,7 @@ def main():
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s',
         handlers=[
-            logging.FileHandler('ml_logs.log'),
+            logging.FileHandler('ml_logs2.log'),
             logging.StreamHandler()
         ]
     )
