@@ -5,9 +5,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.neural_network import MLPClassifier
+from xgboost import XGBClassifier #pip install xgboost
 
 
-NROWS = 130000
+NROWS = 20000
 
 
 def load_csv_data(filepath):
@@ -60,7 +61,8 @@ def train_and_compare_classifiers(df):
     classifiers = {
         "Random Forest": RandomForestClassifier(n_estimators=100, random_state=42),
         "Gradient Boosting": GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, random_state=42),
-        "MLP (Neural Network)": MLPClassifier(hidden_layer_sizes=(100,), max_iter=300, random_state=42)
+        "MLP (Neural Network)": MLPClassifier(hidden_layer_sizes=(100,), max_iter=300, random_state=42),
+        "XGBoost": XGBClassifier(n_estimators=100, eval_metric='logloss', random_state=42)
     }
 
     models = {}
