@@ -1,12 +1,11 @@
 import time
 import logging
-import json
-from scapy.layers.inet import IP, TCP, UDP
-from scapy.layers.l2 import Ether
 from kafka import KafkaProducer
 from kafka.admin import KafkaAdminClient, NewTopic
 from scapy.utils import wrpcap
 from scapy.all import *
+import os
+import glob
 
 TOPIC = "RAW_NETWORK_DATA"
 BROKER = 'kafka:9092'
@@ -69,52 +68,8 @@ def is_binary_field(value):
         return True
     elif isinstance(value, str) and len(value) % 2 == 0 and all(c in '0123456789abcdefABCDEF' for c in value):
         return True
-    return False
-
-def packet_to_dict(packet):
-    """Convert a Scapy packet into a detailed dictionary with all layers and fields."""
-    timestamp = float(packet.time)
     
-    packet_dict = {
-        'timestamp': timestamp,
-        'timestamp_iso': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(timestamp)),
-        'summary': packet.summary(),
-        'length': len(packet),
-        'layers': []
-    }
-
-    current_layer = packet
-    while current_layer:
-        layer_dict = {
-            'name': current_layer.name,
-            'fields': {}
-        }
-        
-        for field in current_layer.fields_desc:
-            field_name = field.name
-            field_value = current_layer.getfieldval(field_name)
-            
-            if field_value is None:
-                continue
-            
-            # Handle binary/hex fields generically
-            if is_binary_field(field_value):
-                if isinstance(field_value, str):
-                    field_value = bytes.fromhex(field_value)
-                field_value = field_value.hex()
-            elif hasattr(field_value, 'desc'):  
-                field_value = str(field_value)
-            elif isinstance(field_value, (list, tuple, set)):
-                field_value = [str(v) if hasattr(v, 'desc') else v for v in field_value]
-            elif not isinstance(field_value, (int, float, str, bool)):
-                field_value = str(field_value) 
-            
-            layer_dict['fields'][field_name] = field_value
-        
-        packet_dict['layers'].append(layer_dict)
-        current_layer = current_layer.payload if hasattr(current_layer, 'payload') else None
-
-    return packet_dict
+    return False
 
 def get_pcap_data(pcap_file):
     """Reads packets from a large PCAP file continuously, converts to JSON format, logs it, and sends to Kafka."""
@@ -122,29 +77,33 @@ def get_pcap_data(pcap_file):
     
     with PcapReader(pcap_file) as pcap_reader:
         for packet in pcap_reader:
-            # Convert packet to dictionary
-            packet_dict = packet_to_dict(packet)
             send_to_kafka(producer, TOPIC, packet)
-            
-            # Convert to JSON and log
-            try:
-                packet_json = json.dumps(packet_dict, indent=2)
-                logging.info(f"Packet data:\n{packet_json}")
-            except Exception as e:
-                logging.info(f"Could not convert packet to JSON: {e}")
-                continue
-            
-            time.sleep(0.1) 
 
 def main():
-    PCAP_FILE_PATH = "dataset_files/1.pcap"
+    PCAP_DIR = "dataset_files"
     logging.basicConfig(
-        filename='logs/data_producer.log', 
+        filename='logs/data_producer.log',
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s'
     )
+
     create_topic(TOPIC, BROKER)
-    get_pcap_data(PCAP_FILE_PATH)
+
+    # Get all pcap files in directory (sorted numerically if named like 1.pcap, 2.pcap, etc.)
+    pcap_files = sorted(
+        glob.glob(os.path.join(PCAP_DIR, "*.pcap")),
+        key=lambda x: int(os.path.splitext(os.path.basename(x))[0])
+    )
+
+    if not pcap_files:
+        logging.warning("No PCAP files found to process.")
+        return
+
+    for file_path in pcap_files:
+        logging.info(f"Processing file: {file_path}")
+        get_pcap_data(file_path)
+    
+    logging.info("Finished processing all PCAP files.")
 
 if __name__ == "__main__":
     main()
