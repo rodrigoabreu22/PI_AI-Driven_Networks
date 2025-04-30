@@ -15,17 +15,16 @@ def fetch_data_flows(client):
     return df
 
 def pre_process_data(df):
-    """Preprocess data for Random Forest classification"""
+    """Preprocess data for binary classification: Benign (0) vs. Attack (1)."""
     logging.info("Preprocessing data...")
-    
-    # Drop string columns that are not useful for training
+
+    # Drop string columns not useful for training
     non_numeric_cols = df.select_dtypes(include=['object', 'string']).columns.tolist()
-    non_features = ['IPV4_SRC_ADDR', 'IPV4_DST_ADDR', 'Attack']  # Attack will be encoded, others dropped
-    drop_cols = list(set(non_numeric_cols) - set(['Attack']))  # keep 'Attack' for encoding
-    
+    drop_cols = list(set(non_numeric_cols) - set(['Attack']))  # Keep 'Attack' only
+
     df = df.drop(columns=drop_cols, errors='ignore')
 
-    # Drop columns with UUIDs or unparseable types if they exist
+    # Convert object columns to numeric if possible, drop if not
     for col in df.columns:
         if df[col].dtype == 'object':
             try:
@@ -37,18 +36,18 @@ def pre_process_data(df):
     # Drop rows with missing values
     df = df.replace([np.inf, -np.inf], np.nan).dropna()
 
-    # Encode target variable
-    label_encoder = LabelEncoder()
+    # Binary encode the 'Attack' column
     if 'Attack' in df.columns:
-        df['Attack'] = label_encoder.fit_transform(df['Attack'])
-        logging.info(f"Attack labels encoded: {list(label_encoder.classes_)}")
+        df['Attack'] = df['Attack'].apply(lambda x: 0 if str(x).lower() == 'benign' else 1)
+        logging.info("Encoded Attack column: 0 = benign, 1 = attack")
     else:
         raise ValueError("'Attack' column is missing from the dataset")
-    
-    logging.info(f"Rows with Label = 1: {df[df['Label'] == 1].shape[0]}")
 
+    logging.info(f"Rows labeled as benign (0): {df[df['Attack'] == 0].shape[0]}")
+    logging.info(f"Rows labeled as attack (1): {df[df['Attack'] == 1].shape[0]}")
     logging.info(f"Final dataset shape after preprocessing: {df.shape}")
-    return df, label_encoder
+    
+    return df
 
 def random_forest_training(df):
     """Train and evaluate Random Forest classifier"""
@@ -105,7 +104,7 @@ def train_and_compare_classifiers(df):
         clf.fit(X_train, y_train)
         y_pred = clf.predict(X_test)
         logging.info(f"\n--- Classification Report: {name} ---")
-        logging.info(f"\n{classification_report(y_test, y_pred, zero_division=0)}")
+        logging.info(f"\n{classification_report(y_test, y_pred, zero_division=0, target_names=["benign", "attack"])}")
         models[name] = clf
 
     return models

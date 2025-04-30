@@ -5,10 +5,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.neural_network import MLPClassifier
-from xgboost import XGBClassifier #pip install xgboost
+from xgboost import XGBClassifier
 
 
-NROWS = 20000
+NROWS = 200000
 
 
 def load_csv_data(filepath):
@@ -90,7 +90,7 @@ def main():
 
     try:
         logging.info("Starting the CSV-based ML pipeline...")
-        df = load_csv_data('data.csv')
+        df = load_csv_data('dataset_files/data.csv')
         df_processed = pre_process_data(df)
         train_and_compare_classifiers(df_processed)
         logging.info("Model training complete.")
