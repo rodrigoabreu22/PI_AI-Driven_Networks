@@ -97,7 +97,6 @@ def receive_and_store_data():
             )
 
             write_api.write(bucket=INFLUXDB_BUCKET, org=INFLUXDB_ORG, record=point)
-            logging.info(f"Stored packet at {rfc_timestamp}")
 
         except Exception as e:
             logging.error(f"Error processing Kafka message: {e}", exc_info=True)

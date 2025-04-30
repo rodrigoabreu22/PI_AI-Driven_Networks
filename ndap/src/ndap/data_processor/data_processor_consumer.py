@@ -85,7 +85,7 @@ def receive_and_store_data():
                             logging.info(f"Wrote {len(packet_batch)} packets to {output_filename}")
                             processor_main(output_filename)
                             packet_batch.clear()
-                            time.sleep(30)
+                            time.sleep(10)
 
                     except Exception as e:
                         logging.error(f"Error processing message: {e}", exc_info=True)
