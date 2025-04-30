@@ -48,6 +48,7 @@ def pre_process_data(df):
 
     return df
 
+
 def train_and_compare_classifiers(df, smote_flag=2):
     feature_cols = df.columns.difference(['Label'])
     X = df[feature_cols]
@@ -59,68 +60,14 @@ def train_and_compare_classifiers(df, smote_flag=2):
         smote = SMOTE(random_state=42)
         X_train, y_train = smote.fit_resample(X_train, y_train)
         logging.info("SMOTE applied.")
+        
     elif smote_flag == 2:
         smote = SMOTE(random_state=42)
         undersample = RandomUnderSampler(random_state=42)
         pipeline = ImbPipeline([('o', smote), ('u', undersample)])
         X_train, y_train = pipeline.fit_resample(X_train, y_train)
         logging.info("SMOTE and undersampling applied.")
-    elif smote_flag == 0:
-        logging.info("SMOTE flag set to 0, no resampling will be applied.")
 
-    classifiers = {
-        "Random Forest": RandomForestClassifier(n_estimators=100, random_state=42),
-        "Gradient Boosting": GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, random_state=42),
-        "MLP (Neural Network)": MLPClassifier(hidden_layer_sizes=(100,), max_iter=300, random_state=42),
-        "XGBoost": XGBClassifier(n_estimators=100, eval_metric='logloss', random_state=42)
-    }
-
-    results = []
-    models = {}
-
-    for name, clf in classifiers.items():
-        clf.fit(X_train, y_train)
-        y_pred = clf.predict(X_test)
-        report = classification_report(y_test, y_pred, output_dict=True, zero_division=0)
-        weighted_f1 = report['weighted avg']['f1-score']
-        mcc = matthews_corrcoef(y_test, y_pred)
-        results.append([name, f"{weighted_f1:.4f}", f"{mcc:.4f}"])
-        models[name] = clf
-
-    # Find the best model based on Weighted F1 Score
-    best_model_name = max(results, key=lambda x: float(x[1]))[0]
-    best_model = models[best_model_name]
-    logging.info(f"The best model is: {best_model_name}")
-
-    # Save the best model to a pickle file
-    with open('best_model.pkl', 'wb') as f:
-        pickle.dump(best_model, f)
-    logging.info("Best model saved as 'best_model.pkl'.")
-
-    headers = ["Model", "Weighted F1 Score", "Matthews Corr Coef"]
-    summary_table = tabulate(results, headers=headers, tablefmt='grid')
-    logging.info("\n=== Model Performance Summary ===\n" + summary_table)
-
-    return models
-
-
-def train_and_compare_classifiers(df, smote_flag=1):
-    feature_cols = df.columns.difference(['Label'])
-    X = df[feature_cols]
-    y = df['Label']
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-    if smote_flag == 1:
-        smote = SMOTE(random_state=42)
-        X_train, y_train = smote.fit_resample(X_train, y_train)
-        logging.info("SMOTE applied.")
-    elif smote_flag == 2:
-        smote = SMOTE(random_state=42)
-        undersample = RandomUnderSampler(random_state=42)
-        pipeline = ImbPipeline([('o', smote), ('u', undersample)])
-        X_train, y_train = pipeline.fit_resample(X_train, y_train)
-        logging.info("SMOTE and undersampling applied.")
     elif smote_flag == 0:
         logging.info("SMOTE flag set to 0, no resampling will be applied.")
 
@@ -168,7 +115,7 @@ def main():
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s',
         handlers=[
-            logging.FileHandler('ml_logs2.log'),
+            logging.FileHandler('ml_logs3.log'),
             logging.StreamHandler()
         ]
     )
