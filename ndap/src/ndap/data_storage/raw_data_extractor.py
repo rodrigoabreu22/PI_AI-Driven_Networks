@@ -20,7 +20,6 @@ KAFKA_TOPIC = "DATA_TO_BE_PROCESSED"
 KAFKA_BROKER = 'kafka:9092'
 CHECK_INTERVAL = 10  
 EMPTY_DB_WAIT_TIME = 5  
-TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 # Initialize InfluxDB client
 client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
@@ -70,9 +69,9 @@ def load_last_timestamp():
             last_processed_timestamp = f.read().strip()
 
             # Convert last processed timestamp to datetime and add 1 microsecond to avoid reprocessing the same data
-            last_dt = datetime.strptime(last_processed_timestamp, TIMESTAMP_FORMAT)
+            last_dt = datetime.strptime(last_processed_timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
             new_start_dt = last_dt + timedelta(microseconds=1)
-            new_start_timestamp = new_start_dt.strftime(TIMESTAMP_FORMAT)
+            new_start_timestamp = new_start_dt.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
             return new_start_timestamp
         
@@ -101,8 +100,8 @@ def fetch_earliest_timestamp():
 
         for table in tables:
             for record in table.records:
-                timestamp = record.get_time()
-                formatted = timestamp.strftime(TIMESTAMP_FORMAT)
+                timestamp = record.get_time()  # Already a datetime object with timezone
+                formatted = timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
                 logging.info(f"Earliest timestamp: {formatted}")
                 return formatted
 
@@ -114,6 +113,9 @@ def fetch_earliest_timestamp():
         return None
 
 
+# Fix this to function to get 100 packets by a given timestamp, 
+# it should convert it back to bytes and send it to kafka with the packet timestamp as header in the message
+# so the packet can be reconstructed by the consumer (other script that I will implement)
 def main():
     """Main function that continuously checks for new data and pushes it to Kafka."""
     initialize_logging()
@@ -146,8 +148,8 @@ def main():
             for table in tables:
                 for record in table.records:
                     time_obj = record.get_time()
-                    raw_data_str = record.get_value()
-                    timestamp_str = time_obj.strftime(TIMESTAMP_FORMAT)
+                    raw_data_str = record.get_value()  # Assuming it's a hex or base64-encoded string
+                    timestamp_str = time_obj.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
                     timestamp_float = time_obj.timestamp()
 
 

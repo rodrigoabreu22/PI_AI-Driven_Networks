@@ -12,7 +12,7 @@ from scapy.packet import Raw, Padding
 from data_processor import processor_main
 
 # Configuration
-TOPIC_RAW_DATA_RCV = "RAW_NETWORK_DATA_RECEIVED"
+TOPIC_RAW_DATA_RCV = "DATA_TO_BE_PROCESSED"
 BROKER = 'kafka:9092'  
 PACKET_BATCH_SIZE = 100
 
@@ -85,6 +85,7 @@ def receive_and_store_data():
                             logging.info(f"Wrote {len(packet_batch)} packets to {output_filename}")
                             processor_main(output_filename)
                             packet_batch.clear()
+                            time.sleep(30)
 
                     except Exception as e:
                         logging.error(f"Error processing message: {e}", exc_info=True)
