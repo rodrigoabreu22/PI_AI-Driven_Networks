@@ -13,7 +13,7 @@ from tabulate import tabulate #pip install tabulate
 import pickle
 
 NROWS = 20000
-SMOTE_FLAG = 0  # 0 = OFF, 1 = SMOTE, 2 = SMOTE + Undersampling
+SMOTE_FLAG = 2  # 0 = OFF, 1 = SMOTE, 2 = SMOTE + Undersampling
 
 def load_csv_data(filepath):
     df = pd.read_csv(filepath, nrows=NROWS)
@@ -83,6 +83,16 @@ def train_and_compare_classifiers(df, smote_flag=1):
         mcc = matthews_corrcoef(y_test, y_pred)
         results.append([name, f"{weighted_f1:.4f}", f"{mcc:.4f}"])
         models[name] = clf
+
+        # Log feature importances for tree-based models
+        if hasattr(clf, 'feature_importances_'):
+            importances = clf.feature_importances_
+            feature_importance_data = list(zip(feature_cols, importances))
+            feature_importance_data.sort(key=lambda x: x[1], reverse=True)  # Sort by importance
+            top_features = feature_importance_data[:5]  # Log top 5 features
+            logging.info(f"Top 5 important features for {name}:")
+            for feature, importance in top_features:
+                logging.info(f"{feature}: {importance:.4f}")
 
     # Find the best model based on Weighted F1 Score
     best_model_name = max(results, key=lambda x: float(x[1]))[0]
