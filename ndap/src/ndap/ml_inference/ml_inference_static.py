@@ -7,7 +7,7 @@ import sys
 # Constants
 MODEL_FILE = 'ml_training/best_model.pkl'
 DATA_FILE = 'ml_inference/unseen_data.csv' 
-OUTPUT_FILE = 'predictions.csv'
+OUTPUT_FILE = 'ml_inference/predictions.csv'
 
 def load_model(model_path):
     with open(model_path, 'rb') as f:
