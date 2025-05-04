@@ -150,14 +150,14 @@ def receive_and_push_data():
             packet = bytes_to_scapy(message.value, original_ts)
             send_to_kafka(producer, TOPIC_PUSH, message)
 
-            try:
-                packet_dict = packet_to_dict(packet)
-                packet_json = json.dumps(packet_dict, indent=2)
-
-                logging.info(f"\nReceived packet:\n{packet_json}")
-            except Exception as e:
-                logging.info(f"Could not convert packet to JSON: {e}")
-                continue
+            #try:
+            #    packet_dict = packet_to_dict(packet)
+            #    packet_json = json.dumps(packet_dict, indent=2)
+#
+            #    logging.info(f"\nReceived packet:\n{packet_json}")
+            #except Exception as e:
+            #    logging.info(f"Could not convert packet to JSON: {e}")
+            #    continue
             
 
         except Exception as e:

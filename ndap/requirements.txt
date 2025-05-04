@@ -6,3 +6,5 @@ clickhouse-connect
 influxdb-client
 python-dotenv
 scapy
+clickhouse-driver
+scikit-learn
