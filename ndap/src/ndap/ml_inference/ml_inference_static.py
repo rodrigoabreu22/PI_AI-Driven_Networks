@@ -8,6 +8,11 @@ def load_model(pickle_file='ml_training/best_model.pkl'):
         model = pickle.load(f)
     return model
 
+def load_classifier_model(pickle_file='ml_training/best_classifier_model.pkl'):
+    with open(pickle_file, 'rb') as f:
+        model = pickle.load(f)
+    return model
+
 def preprocess_data_for_prediction(df):
     cols_to_drop = [
         'FLOW_START_MILLISECONDS', 'FLOW_END_MILLISECONDS',
