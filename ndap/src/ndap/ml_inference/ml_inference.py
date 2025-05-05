@@ -2,8 +2,7 @@ import pandas as pd
 import numpy as np
 import pickle
 import logging
-from kafka import KafkaConsumer
-from kafka import KafkaProducer
+from kafka import KafkaConsumer, KafkaProducer
 from kafka.admin import KafkaAdminClient, NewTopic
 import json
 
@@ -12,96 +11,99 @@ TOPIC_INFERENCE_DATA = "INFERENCE_DATA"
 BROKER = 'kafka:9092'
 
 def create_topic(topic_name, broker, num_partitions=1, replication_factor=1):
-    """
-    Ensure the Kafka topic exists; create it if it does not.
-    """
-    admin_client = None
+    admin_client = KafkaAdminClient(bootstrap_servers=broker)
     try:
-        admin_client = KafkaAdminClient(bootstrap_servers=broker)
-        
-        # Check if the topic exists
-        existing_topics = admin_client.list_topics()
-        if topic_name in existing_topics:
-            logging.info(f"Topic '{topic_name}' already exists.")
-        else:
-            # Create the topic
+        if topic_name not in admin_client.list_topics():
             topic = NewTopic(name=topic_name, num_partitions=num_partitions, replication_factor=replication_factor)
             admin_client.create_topics([topic])
-            logging.info(f"Topic '{topic_name}' created successfully.")
+            logging.info(f"Created topic: {topic_name}")
     except Exception as e:
-        print(f"Failed to create topic '{topic_name}': {e}")
+        logging.warning(f"Topic creation skipped or failed: {e}")
     finally:
-        if admin_client is not None:
-            admin_client.close()
-
+        admin_client.close()
 
 def create_kafka_consumer():
-    """Creates a Kafka consumer with automatic JSON deserialization."""
-    consumer = KafkaConsumer(
+    return KafkaConsumer(
         TOPIC_PROCESSED_NETWORK_DATA,
         bootstrap_servers=BROKER,
         auto_offset_reset='earliest',
         enable_auto_commit=True,
         value_deserializer=lambda v: json.loads(v.decode('utf-8'))
     )
-    return consumer
 
 def create_kafka_producer():
-    """Creates a Kafka producer for sending raw packet data."""
-    producer = KafkaProducer(
+    return KafkaProducer(
         bootstrap_servers=BROKER,
         value_serializer=lambda v: json.dumps(v).encode('utf-8')
     )
-    logging.info("Kafka producer started.")
-    return producer
 
+def load_model(path):
+    with open(path, 'rb') as f:
+        return pickle.load(f)
 
-def load_model(pickle_file='ml_training/best_model.pkl'):
-    with open(pickle_file, 'rb') as f:
-        model = pickle.load(f)
-    return model
+def pre_process_single_flow(flow, feature_columns=None):
+    drop_keys = {'IPV4_SRC_ADDR', 'IPV4_DST_ADDR'}
+    processed = {}
 
-def load_classifier_model(pickle_file='ml_training/best_classifier_model.pkl'):
-    with open(pickle_file, 'rb') as f:
-        model = pickle.load(f)
-    return model
+    for key, value in flow.items():
+        if key in drop_keys:
+            continue
+        if key == 'Attack':
+            continue  # Will be overwritten
+        try:
+            processed[key] = float(value)
+        except (ValueError, TypeError):
+            continue
 
-def binary_attack_prediction(model, df):
-    df = df[model.feature_names_in_]
-    predictions = model.predict(df)
-    return predictions
+    df = pd.DataFrame([processed])
+    if feature_columns:
+        missing = [col for col in feature_columns if col not in df.columns]
+        for col in missing:
+            df[col] = 0.0
+        df = df[feature_columns]
+    return df
 
 def main():
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.FileHandler('predict_log.log'),
-            logging.StreamHandler()
-        ]
+        handlers=[logging.StreamHandler()]
     )
 
-    try:
-        logging.info("Loading model...")
-        model = load_model('best_model.pkl')
-        logging.info("Model loaded successfully.")
+    create_topic(TOPIC_INFERENCE_DATA, BROKER)
+    consumer = create_kafka_consumer()
+    producer = create_kafka_producer()
 
-        logging.info("Loading new data for prediction...")
-        df = pd.read_csv('unseen_data.csv')  # <-- Update this filename if needed
-        df_processed = preprocess_data_for_prediction(df)
-        logging.info(f"Preprocessed prediction data shape: {df_processed.shape}")
+    logging.info("Loading models...")
+    binary_model = load_model('ml_training/best_model.pkl')  # binary model
+    attack_model = load_model('ml_training/best_classifier_model.pkl')  # multiclass model
+    attack_label_names = attack_model.classes_
 
-        logging.info("Making predictions...")
-        preds = predict(model, df_processed)
-        logging.info(f"Predictions completed. First 10 predictions: {preds[:10]}")
+    logging.info("Kafka consumer and models are ready.")
 
-        # Save predictions
-        output = pd.DataFrame(preds, columns=['Prediction'])
-        output.to_csv('predictions.csv', index=False)
-        logging.info("Predictions saved to 'predictions.csv'.")
+    for message in consumer:
+        flow = message.value
 
-    except Exception as e:
-        logging.error(f"Error during prediction: {str(e)}", exc_info=True)
+        try:
+            df_processed = pre_process_single_flow(flow, binary_model.feature_names_in_)
+
+            binary_pred = binary_model.predict(df_processed)[0]
+            flow['Label'] = int(binary_pred)
+
+            if binary_pred == 0:
+                flow['Attack'] = 'Benign'
+            else:
+                # Predict specific attack type
+                attack_df = pre_process_single_flow(flow, attack_model.feature_names_in_)
+                attack_pred = attack_model.predict(attack_df)[0]
+                flow['Attack'] = str(attack_label_names[attack_pred])
+
+            # Send enriched flow to output Kafka topic
+            producer.send(TOPIC_INFERENCE_DATA, flow)
+            logging.info(f"Processed flow sent to Kafka: Label={flow['Label']}, Attack={flow['Attack']}")
+
+        except Exception as e:
+            logging.error(f"Error processing flow: {e}", exc_info=True)
 
 if __name__ == "__main__":
     main()
