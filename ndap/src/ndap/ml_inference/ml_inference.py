@@ -8,7 +8,7 @@ import json
 
 TOPIC_PROCESSED_NETWORK_DATA = "PROCESSED_NETWORK_DATA"
 TOPIC_INFERENCE_DATA = "INFERENCE_DATA"
-BROKER = 'kafka:9092'
+BROKER = 'localhost:29092'
 
 def create_topic(topic_name, broker, num_partitions=1, replication_factor=1):
     admin_client = KafkaAdminClient(bootstrap_servers=broker)
@@ -67,16 +67,16 @@ def main():
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s',
-        handlers=[logging.StreamHandler()]
+        handlers=[logging.FileHandler('ml_inference.log')]
     )
 
-    create_topic(TOPIC_INFERENCE_DATA, BROKER)
+    #create_topic(TOPIC_INFERENCE_DATA, BROKER)
     consumer = create_kafka_consumer()
-    producer = create_kafka_producer()
+    #producer = create_kafka_producer()
 
     logging.info("Loading models...")
-    binary_model = load_model('ml_training/best_model.pkl')  # binary model
-    attack_model = load_model('ml_training/best_classifier_model.pkl')  # multiclass model
+    binary_model = load_model('best_model.pkl')  # binary model
+    attack_model = load_model('best_classifier_model.pkl')  # multiclass model
     attack_label_names = attack_model.classes_
 
     logging.info("Kafka consumer and models are ready.")
@@ -99,7 +99,7 @@ def main():
                 flow['Attack'] = str(attack_label_names[attack_pred])
 
             # Send enriched flow to output Kafka topic
-            producer.send(TOPIC_INFERENCE_DATA, flow)
+            #producer.send(TOPIC_INFERENCE_DATA, flow)
             logging.info(f"Processed flow sent to Kafka: Label={flow['Label']}, Attack={flow['Attack']}")
 
         except Exception as e:
