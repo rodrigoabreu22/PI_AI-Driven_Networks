@@ -4,7 +4,7 @@ import logging
 from kafka import KafkaProducer, KafkaConsumer
 from kafka.admin import KafkaAdminClient, NewTopic
 
-TOPIC_RECEIVE = "PROCESSED_NETWORK_DATA"
+TOPIC_RECEIVE = "INFERENCE_DATA"
 TOPIC_PUSH = "RELAY_NETWORK_CRONOGRAF_DATA"
 BROKER = 'kafka:9092'
 
@@ -69,7 +69,7 @@ def receive_and_push_data():
         time.sleep(1)  # Avoids busy looping
 
 def main():
-    logging.basicConfig(filename='data_relay.log', level=logging.INFO)
+    logging.basicConfig(filename='logs/data_relay.log', level=logging.INFO)
     create_topic(TOPIC_PUSH, BROKER)
     receive_and_push_data()
 

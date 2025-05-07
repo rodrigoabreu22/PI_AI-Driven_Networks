@@ -91,7 +91,7 @@ def start_kafka_inference_loop():
     logging.info("Starting Kafka inference loop...")
 
     consumer = create_kafka_consumer()
-    #producer = create_kafka_producer()
+    producer = create_kafka_producer()
 
     while binary_model is None:
         logging.info("Waiting for model to be loaded...")
@@ -113,7 +113,7 @@ def start_kafka_inference_loop():
             else:
                 flow['Attack'] = 'undefined'
 
-            #producer.send(TOPIC_INFERENCE_DATA, flow)
+            producer.send(TOPIC_INFERENCE_DATA, flow)
             logging.info(f"Processed flow: Label={flow['Label']}, Attack={flow['Attack']}")
 
         except Exception as e:
