@@ -1,14 +1,24 @@
 import pandas as pd
-import numpy as np
-import pickle
 import logging
 from kafka import KafkaConsumer, KafkaProducer
 from kafka.admin import KafkaAdminClient, NewTopic
 import json
+import time
+import numpy as np
+
+binary_model = None
 
 TOPIC_PROCESSED_NETWORK_DATA = "PROCESSED_NETWORK_DATA"
 TOPIC_INFERENCE_DATA = "INFERENCE_DATA"
 BROKER = 'localhost:29092'
+
+# Configure logging to file
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    filename='inference.log',
+    filemode='a'  # 'a' to append, 'w' to overwrite each run
+)
 
 def create_topic(topic_name, broker, num_partitions=1, replication_factor=1):
     admin_client = KafkaAdminClient(bootstrap_servers=broker)
@@ -37,49 +47,57 @@ def create_kafka_producer():
         value_serializer=lambda v: json.dumps(v).encode('utf-8')
     )
 
-def load_model(path):
-    with open(path, 'rb') as f:
-        return pickle.load(f)
+def update_binary_model(model):
+    global binary_model
+    binary_model = model
+    model_name = type(binary_model).__name__
+    logging.info(f"Binary model updated. New Algorithm used: {model_name}")
+
 
 def pre_process_single_flow(flow, feature_columns=None):
-    drop_keys = {'IPV4_SRC_ADDR', 'IPV4_DST_ADDR'}
-    processed = {}
+    # Same columns to drop as in the dataset preprocessing
+    cols_to_drop = {
+        'FLOW_START_MILLISECONDS', 'FLOW_END_MILLISECONDS',
+        'IPV4_SRC_ADDR', 'L4_SRC_PORT', 'IPV4_DST_ADDR', 'L4_DST_PORT',
+        'ICMP_TYPE', 'ICMP_IPV4_TYPE', 'DNS_QUERY_ID', 'DNS_QUERY_TYPE',
+        'DNS_TTL_ANSWER', 'FTP_COMMAND_RET_CODE', 'Attack'
+    }
 
+    # Convert to numeric and drop irrelevant fields
+    processed = {}
     for key, value in flow.items():
-        if key in drop_keys:
+        if key in cols_to_drop:
             continue
-        if key == 'Attack':
-            continue  # Will be overwritten
         try:
             processed[key] = float(value)
         except (ValueError, TypeError):
-            continue
+            continue  # Drop non-numeric or bad data
 
     df = pd.DataFrame([processed])
-    if feature_columns:
-        missing = [col for col in feature_columns if col not in df.columns]
-        for col in missing:
+
+    # Ensure all expected feature columns are present
+    if feature_columns is not None:
+        missing_cols = [col for col in feature_columns if col not in df.columns]
+        for col in missing_cols:
             df[col] = 0.0
         df = df[feature_columns]
+
+    # Drop rows with NaNs (from failed conversions)
+    df = df.replace([np.inf, -np.inf], np.nan).dropna()
+
     return df
 
-def main():
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        handlers=[logging.FileHandler('ml_inference.log')]
-    )
+def start_kafka_inference_loop():
+    logging.info("Starting Kafka inference loop...")
 
-    #create_topic(TOPIC_INFERENCE_DATA, BROKER)
     consumer = create_kafka_consumer()
     #producer = create_kafka_producer()
 
-    logging.info("Loading models...")
-    binary_model = load_model('best_model.pkl')  # binary model
-    attack_model = load_model('best_classifier_model.pkl')  # multiclass model
-    attack_label_names = attack_model.classes_
+    while binary_model is None:
+        logging.info("Waiting for model to be loaded...")
+        time.sleep(5)
 
-    logging.info("Kafka consumer and models are ready.")
+    logging.info("Kafka consumer and model are ready.")
 
     for message in consumer:
         flow = message.value
@@ -93,17 +111,10 @@ def main():
             if binary_pred == 0:
                 flow['Attack'] = 'Benign'
             else:
-                # Predict specific attack type
-                attack_df = pre_process_single_flow(flow, attack_model.feature_names_in_)
-                attack_pred = attack_model.predict(attack_df)[0]
-                flow['Attack'] = str(attack_label_names[attack_pred])
+                flow['Attack'] = 'undefined'
 
-            # Send enriched flow to output Kafka topic
             #producer.send(TOPIC_INFERENCE_DATA, flow)
-            logging.info(f"Processed flow sent to Kafka: Label={flow['Label']}, Attack={flow['Attack']}")
+            logging.info(f"Processed flow: Label={flow['Label']}, Attack={flow['Attack']}")
 
         except Exception as e:
             logging.error(f"Error processing flow: {e}", exc_info=True)
-
-if __name__ == "__main__":
-    main()
