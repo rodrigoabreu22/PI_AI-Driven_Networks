@@ -46,7 +46,7 @@ def pre_process_data(df):
     return df
 
 def train_and_compare_classifiers(df, smote_flag=1):
-    feature_cols = df.columns.difference(['Label'])
+    feature_cols = [col for col in df.columns if col != 'Label']
     X = df[feature_cols]
     y = df['Label']
 

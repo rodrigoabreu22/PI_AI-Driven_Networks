@@ -139,7 +139,6 @@ def main():
                 |> filter(fn: (r) => r._field == "raw_data")
                 |> group(columns: ["_time"])
                 |> sort(columns: ["_time"])
-                |> limit(n: 100)
             """
 
             tables = query_api.query(query)

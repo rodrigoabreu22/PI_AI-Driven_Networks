@@ -25,7 +25,8 @@ def create_topic(topic_name, broker, num_partitions=1, replication_factor=1):
     finally:
         try:
             admin_client.close()
-        except:
+        except Exception as e:
+            logging.error(f"Can not close admin client. Error: {e}")
             pass
 
 def create_kafka_producer():
@@ -46,85 +47,6 @@ def create_kafka_consumer():
     )
     return consumer
 
-def is_binary_field(value):
-    if isinstance(value, (bytes, bytearray)):
-        return True
-    elif isinstance(value, str) and len(value) % 2 == 0 and all(c in '0123456789abcdefABCDEF' for c in value):
-        return True
-    return False
-
-def packet_to_dict(packet):
-    timestamp = float(packet.time)
-
-    packet_dict = {
-        'timestamp': timestamp,
-        'timestamp_iso': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(timestamp)),
-        'summary': packet.summary(),
-        'length': len(packet),
-        'layers': []
-    }
-
-    current_layer = packet
-    while current_layer:
-        layer_dict = {
-            'name': current_layer.name,
-            'fields': {}
-        }
-
-        for field in current_layer.fields_desc:
-            field_name = field.name
-            try:
-                field_value = current_layer.getfieldval(field_name)
-            except:
-                continue
-
-            if field_value is None:
-                continue
-
-            if is_binary_field(field_value):
-                if isinstance(field_value, str):
-                    field_value = bytes.fromhex(field_value)
-                field_value = field_value.hex()
-            elif hasattr(field_value, 'desc'):
-                field_value = str(field_value)
-            elif isinstance(field_value, (list, tuple, set)):
-                field_value = [str(v) if hasattr(v, 'desc') else v for v in field_value]
-            elif not isinstance(field_value, (int, float, str, bool)):
-                field_value = str(field_value)
-
-            layer_dict['fields'][field_name] = field_value
-
-        packet_dict['layers'].append(layer_dict)
-
-        if hasattr(current_layer, 'payload') and current_layer.payload:
-            current_layer = current_layer.payload
-        else:
-            break
-
-    return packet_dict
-
-def bytes_to_scapy(packet_bytes, original_timestamp=None):
-    try:
-        for layer in [CookedLinux, Ether, IP]:
-            try:
-                packet = layer(packet_bytes)
-                if len(packet) == len(packet_bytes):
-                    if original_timestamp is not None:
-                        packet.time = original_timestamp
-                    return packet
-            except:
-                continue
-
-        packet = Raw(packet_bytes)
-        if original_timestamp is not None:
-            packet.time = original_timestamp
-        return packet
-
-    except Exception as e:
-        logging.warning(f"Packet reconstruction fallback triggered: {e}")
-        traceback.print_exc()
-        return Raw(packet_bytes)
-
 def send_to_kafka(producer, topic, message):
     """Send Kafka message (raw format)."""
     try:
@@ -140,26 +62,8 @@ def receive_and_push_data():
 
     for message in consumer:
         try:
-            original_ts = None
-            if message.headers:
-                for header in message.headers:
-                    if header[0] == 'timestamp':
-                        original_ts = float(header[1].decode('utf-8'))
-                        break
-
-            packet = bytes_to_scapy(message.value, original_ts)
             send_to_kafka(producer, TOPIC_PUSH, message)
-
-            #try:
-            #    packet_dict = packet_to_dict(packet)
-            #    packet_json = json.dumps(packet_dict, indent=2)
-#
-            #    logging.info(f"\nReceived packet:\n{packet_json}")
-            #except Exception as e:
-            #    logging.info(f"Could not convert packet to JSON: {e}")
-            #    continue
             
-
         except Exception as e:
             logging.error(f"Error processing message: {e}")
             traceback.print_exc()

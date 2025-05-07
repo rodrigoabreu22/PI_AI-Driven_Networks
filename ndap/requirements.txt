@@ -8,3 +8,5 @@ python-dotenv
 scapy
 clickhouse-driver
 scikit-learn
+python-multipart
+uvicorn

@@ -11,6 +11,7 @@ from imblearn.under_sampling import RandomUnderSampler
 from imblearn.pipeline import Pipeline as ImbPipeline
 from tabulate import tabulate #pip install tabulate
 import pickle
+import requests
 
 SMOTE_FLAG = 0  # 0 = OFF, 1 = SMOTE, 2 = SMOTE + Undersampling
 
@@ -101,16 +102,32 @@ def train_and_compare_classifiers(df, smote_flag=0):
     best_model = models[best_model_name]
     logging.info(f"The best model is: {best_model_name}")
 
-    # Save the best model to a pickle file
-    with open('best_model.pkl', 'wb') as f:
-        pickle.dump(best_model, f)
-    logging.info("Best model saved as 'best_model.pkl'.")
+    # Serialize model to memory (no file)
+    model_bytes = pickle.dumps(best_model)
+    logging.info("Best model serialized to memory.")
+
+    deploy_model_to_inference_service(model_bytes)
 
     headers = ["Model", "Weighted F1 Score", "Matthews Corr Coef"]
     summary_table = tabulate(results, headers=headers, tablefmt='grid')
     logging.info("\n=== Model Performance Summary ===\n" + summary_table)
 
     return models
+
+
+def deploy_model_to_inference_service(model_bytes, endpoint='http://0.0.0.0:9050/update-model'):
+    """Send the trained model (in memory) to the inference server."""
+    logging.info(f"Deploying model to inference service at {endpoint}...")
+    try:
+        files = {'model_pickle': ('model.pkl', model_bytes)}
+        response = requests.post(endpoint, files=files)
+        if response.status_code == 200:
+            logging.info("Model successfully deployed to inference service.")
+        else:
+            logging.error(f"Failed to deploy model. Status: {response.status_code}, Response: {response.text}")
+    except Exception as e:
+        logging.error(f"Exception during model deployment: {str(e)}")
+
 
 def main():
     logging.basicConfig(
