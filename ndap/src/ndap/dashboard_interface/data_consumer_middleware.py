@@ -65,7 +65,7 @@ def receive_and_store_data():
         influx_client.close()
 
 def main():
-    logging.basicConfig(filename='interface_influx.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(filename='logs/interface_influx.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     logging.info("Starting Kafka to InfluxDB service...")
     receive_and_store_data()
 
