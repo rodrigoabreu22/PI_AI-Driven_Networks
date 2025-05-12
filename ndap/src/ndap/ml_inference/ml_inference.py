@@ -8,6 +8,12 @@ import numpy as np
 
 binary_model = None
 
+multiclass_model = None
+
+attack_mapping_global = {}
+
+reverse_attack_mapping = {}
+
 TOPIC_PROCESSED_NETWORK_DATA = "PROCESSED_NETWORK_DATA"
 TOPIC_INFERENCE_DATA = "INFERENCE_DATA"
 BROKER = 'localhost:29092'
@@ -53,6 +59,18 @@ def update_binary_model(model):
     model_name = type(binary_model).__name__
     logging.info(f"Binary model updated. New Algorithm used: {model_name}")
 
+def update_multiclass_model(model):
+    global multiclass_model
+    multiclass_model = model
+    model_name = type(multiclass_model).__name__
+    logging.info(f"multiclass model updated. New Algorithm used: {model_name}")
+
+def update_attack_mapping(mapping: dict):
+    global attack_mapping_global
+    attack_mapping_global = mapping
+    # Also prepare reversed mapping for inference
+    global reverse_attack_mapping
+    reverse_attack_mapping = {v: k.strip() for k, v in mapping.items()}
 
 def pre_process_single_flow(flow, feature_columns=None):
     # Same columns to drop as in the dataset preprocessing
@@ -101,17 +119,24 @@ def start_kafka_inference_loop():
 
     for message in consumer:
         flow = message.value
+        logging.info(f"FLOW_init= {flow}")
 
         try:
             df_processed = pre_process_single_flow(flow, binary_model.feature_names_in_)
 
             binary_pred = binary_model.predict(df_processed)[0]
+            logging.info(f"flow1: {df_processed.iloc[0].to_dict()}")
             flow['Label'] = int(binary_pred)
-
-            if binary_pred == 0:
-                flow['Attack'] = 'Benign'
+            if int(binary_pred)==1:
+                logging.info("MAYDAY")
+                logging.info(reverse_attack_mapping)
+                multiclass_pred = multiclass_model.predict(df_processed)[0]
+                attack_label = reverse_attack_mapping.get(multiclass_pred, "Unknown")
+                flow['Attack'] = attack_label
             else:
-                flow['Attack'] = 'undefined'
+                flow['Attack'] = 'Benign'
+                logging.info("NO ATTACK")
+            logging.info(f"flow2: {flow}")
 
             producer.send(TOPIC_INFERENCE_DATA, flow)
             logging.info(f"Processed flow: Label={flow['Label']}, Attack={flow['Attack']}")

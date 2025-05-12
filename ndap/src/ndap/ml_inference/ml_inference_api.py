@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi import Request
+from fastapi import Body
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -8,7 +9,7 @@ import threading
 import logging
 from contextlib import asynccontextmanager
 
-from ml_inference import update_binary_model, start_kafka_inference_loop
+from ml_inference import update_binary_model, start_kafka_inference_loop, update_multiclass_model, update_attack_mapping
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -21,12 +22,31 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 @app.post("/update-model")
-async def update_model(model_pickle: UploadFile = File(...)):
+async def update_model(modeltr_pickle: UploadFile = File(...)):
     try:
-        contents = await model_pickle.read()
+        contents = await modeltr_pickle.read()
         model = pickle.loads(contents)
         update_binary_model(model)
         return {"message": "Model updated successfully"}
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
+    
+@app.post("/update-model-attack")
+async def update_model_attack(modeltr_pickle: UploadFile = File(...)):
+    try:
+        contents = await modeltr_pickle.read()
+        model = pickle.loads(contents)
+        update_multiclass_model(model)
+        return {"message": "Model updated successfully"}
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
+@app.post("/update-attack-mapping")
+async def update_attack_mapping_endpoint(mapping: dict = Body(...)):
+    try:
+        update_attack_mapping(mapping)
+        return {"message": "Attack mapping updated successfully", "received": mapping}
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
 
