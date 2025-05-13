@@ -135,7 +135,7 @@ def train_and_compare_classifiers(df, smote_flag=0):
         results.append([name, f"{f1_score_value:.4f}", f"{mcc:.4f}"])
         models[name] = clf
 
-    # Find the best model based on Weighted F1 Score
+    # Find the best model based on F1 Score
     best_model_name = max(results, key=lambda x: float(x[1]))[0]
     best_model = models[best_model_name]
     logging.info(f"The best model is: {best_model_name}")
@@ -146,7 +146,7 @@ def train_and_compare_classifiers(df, smote_flag=0):
 
     deploy_model_to_inference_service(model_bytes)
 
-    headers = ["Model", "Weighted F1 Score", "Matthews Corr Coef"]
+    headers = ["Model", "F1 Score", "Matthews Corr Coef"]
     summary_table = tabulate(results, headers=headers, tablefmt='grid')
     logging.info("\n=== Model Performance Summary ===\n" + summary_table)
 
@@ -220,7 +220,7 @@ def train_and_compare_classifiers_attack(df, smote_flag=0, attack_mapping=None):
 
     send_attack_mapping(attack_mapping)
 
-    headers = ["Model", "Weighted F1 Score", "Matthews Corr Coef"]
+    headers = ["Model", "F1 Score", "Matthews Corr Coef"]
     logging.info("\n=== Model Performance Summary ===\n" + tabulate(results, headers=headers, tablefmt='grid'))
 
     return models
@@ -291,6 +291,7 @@ def main():
         df_processed = pre_process_data(df)
         rows_with_label_1 = df[df['Label'] == 1].shape[0]
         logging.info(f"Rows with Label = 1: {df[df['Label'] == 1].shape[0]}")
+        smote_flag = 1
         if rows_with_label_1 > 200:
             smote_flag = 2
         logging.info(f"Final dataset shape after preprocessing: {df_processed.shape}")
