@@ -3,6 +3,7 @@ import time
 import glob
 import requests
 import base64
+import logging
 from scapy.utils import PcapReader
 from scapy.all import raw
 
@@ -36,7 +37,7 @@ def get_packet_batch(pcap_path, start_index, batch_size):
                 })
 
             except Exception as e:
-                print(f"Error processing packet {i}: {e}")
+                logging.info(f"Error processing packet {i}: {e}")
     return batch
 
 def subscription_callback_worker(subscriptions, _, subscription_ready_event):
@@ -44,7 +45,7 @@ def subscription_callback_worker(subscriptions, _, subscription_ready_event):
 
     pcap_files = get_sorted_pcap_files()
     if not pcap_files:
-        print("❌ No PCAP files found in directory.")
+        logging.info("No PCAP files found in directory.")
         return
 
     while True:
@@ -54,7 +55,7 @@ def subscription_callback_worker(subscriptions, _, subscription_ready_event):
             packet_idx = sub.get('last_index', 0)
 
             if file_idx >= len(pcap_files):
-                print(f"✅ Subscription {sub_id} finished all files.")
+                logging.info(f"Subscription {sub_id} finished all files.")
                 continue
 
             current_pcap = pcap_files[file_idx]
@@ -64,7 +65,8 @@ def subscription_callback_worker(subscriptions, _, subscription_ready_event):
                 # Move to next file
                 subscriptions[sub_id]['file_index'] = file_idx + 1
                 subscriptions[sub_id]['last_index'] = 0
-                print(f"🔁 Moving subscription {sub_id} to next file.")
+
+                logging.info(f"Moving subscription {sub_id} to next file.")
                 continue
 
             payload = {
@@ -74,12 +76,14 @@ def subscription_callback_worker(subscriptions, _, subscription_ready_event):
 
             try:
                 response = requests.post(uri, json=payload)
+
                 if response.status_code == 200:
                     subscriptions[sub_id]['last_index'] = packet_idx + BATCH_SIZE
-                    print(f"📤 Sent packets {packet_idx}-{packet_idx + BATCH_SIZE} from file {os.path.basename(current_pcap)} to {uri}")
+
                 else:
-                    print(f"⚠️ Error {response.status_code} from {uri}")
+                    logging.info(f"Error {response.status_code} from {uri}")
+
             except Exception as e:
-                print(f"❌ Failed to notify {uri}: {e}")
+                logging.info(f"Failed to notify {uri}: {e}")
 
         time.sleep(5)
