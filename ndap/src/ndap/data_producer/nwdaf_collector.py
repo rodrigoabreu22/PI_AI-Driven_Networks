@@ -7,7 +7,7 @@ from uuid import uuid4
 from callback_worker import subscription_callback_worker
 from contextlib import asynccontextmanager
 import uvicorn
-
+from fastapi.responses import JSONResponse
 
 PCAP_FILE_PATH = "dataset_files"  
 
@@ -45,7 +45,7 @@ class EventSubscription(BaseModel):
     notificationURI: str
 
 @app.post("/nnwdaf-eventssubscription/v1/subscriptions", status_code=201)
-def subscribe(event_sub: EventSubscription, response: Response):
+def subscribe(event_sub: EventSubscription):
     sub_id = str(uuid4())
 
     subscriptions[sub_id] = {
@@ -56,19 +56,22 @@ def subscribe(event_sub: EventSubscription, response: Response):
     }
 
     location_url = f"/nnwdaf-eventssubscription/v1/subscriptions/{sub_id}"
-    response.headers["Location"] = location_url
 
     logging.info(f"Subscription created: {sub_id} → {event_sub.notificationURI}")
     subscription_ready_event.set()
 
-    return {
-        "eventSubscriptions": [
-            {
-                "event": event_sub.event,
-                "notificationURI": event_sub.notificationURI
-            }
-        ]
-    }
+    return JSONResponse(
+        content={
+            "eventSubscriptions": [
+                {
+                    "event": event_sub.event,
+                    "notificationURI": event_sub.notificationURI
+                }
+            ]
+        },
+        status_code=201,
+        headers={"Location": location_url}
+    )
 
 @app.get("/")
 def health_check():
