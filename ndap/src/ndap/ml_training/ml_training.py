@@ -291,9 +291,9 @@ def main():
         df_processed = pre_process_data(df)
         rows_with_label_1 = df[df['Label'] == 1].shape[0]
         logging.info(f"Rows with Label = 1: {df[df['Label'] == 1].shape[0]}")
-        smote_flag = 1
+        smote_flag = 2
         if rows_with_label_1 > 200:
-            smote_flag = 2
+            smote_flag = 1
         logging.info(f"Final dataset shape after preprocessing: {df_processed.shape}")
         logging.info("Training and comparing classifiers...")
         df_processed_attack, label_encoder, attack_mapping = pre_process_data_attack(df)
