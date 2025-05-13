@@ -15,8 +15,8 @@ from tabulate import tabulate #pip install tabulate
 import pickle
 import requests
 
-SMOTE_FLAG = 0  # 0 = OFF, 1 = SMOTE, 2 = SMOTE + Undersampling
-SMOTE_FLAG_ATTACK = 2  # 0 = OFF, 1 = SMOTE, 2 = SMOTE + Undersampling
+smote_flag = 1  # 0 = OFF, 1 = SMOTE, 2 = SMOTE + Undersampling
+SMOTE_FLAG_ATTACK = 1  # 0 = OFF, 1 = SMOTE, 2 = SMOTE + Undersampling
 
 def fetch_data_flows(client):
     """Fetch data from ClickHouse using clickhouse_connect."""
@@ -130,9 +130,9 @@ def train_and_compare_classifiers(df, smote_flag=0):
         y_pred = clf.predict(X_test)
         logging.info(f"{name} results:\n{classification_report(y_test, y_pred, zero_division=0)}\n")
         report = classification_report(y_test, y_pred, output_dict=True, zero_division=0)
-        weighted_f1 = report['weighted avg']['f1-score']
+        f1_score_value = report['macro avg']['f1-score']
         mcc = matthews_corrcoef(y_test, y_pred)
-        results.append([name, f"{weighted_f1:.4f}", f"{mcc:.4f}"])
+        results.append([name, f"{f1_score_value:.4f}", f"{mcc:.4f}"])
         models[name] = clf
 
     # Find the best model based on Weighted F1 Score
@@ -187,7 +187,7 @@ def train_and_compare_classifiers_attack(df, smote_flag=0, attack_mapping=None):
         else:
             logging.warning("SMOTE + UnderSampler skipped due to insufficient samples.")
     else:
-        logging.info("No resampling applied (SMOTE_FLAG = 0).")
+        logging.info("No resampling applied (smote_flag = 0).")
 
     classifiers = {
         "Random Forest": RandomForestClassifier(n_estimators=100, random_state=42),
@@ -203,10 +203,10 @@ def train_and_compare_classifiers_attack(df, smote_flag=0, attack_mapping=None):
         clf.fit(X_train, y_train)
         y_pred = clf.predict(X_test)
         report = classification_report(y_test, y_pred, output_dict=True, zero_division=0)
-        weighted_f1 = report['weighted avg']['f1-score']
+        f1_score_value = report['macro avg']['f1-score']
         mcc = matthews_corrcoef(y_test, y_pred)
         logging.info(f"\n--- Classification Report: {name} ---\n{classification_report(y_test, y_pred, zero_division=0)}")
-        results.append([name, f"{weighted_f1:.4f}", f"{mcc:.4f}"])
+        results.append([name, f"{f1_score_value:.4f}", f"{mcc:.4f}"])
         models[name] = clf
 
     best_model_name = max(results, key=lambda x: float(x[1]))[0]
@@ -289,11 +289,14 @@ def main():
         logging.info(f"Loaded {len(df)} rows and {len(df.columns)} columns")
         logging.info("Preprocessing data for Label...")
         df_processed = pre_process_data(df)
+        rows_with_label_1 = df[df['Label'] == 1].shape[0]
         logging.info(f"Rows with Label = 1: {df[df['Label'] == 1].shape[0]}")
+        if rows_with_label_1 > 200:
+            smote_flag = 2
         logging.info(f"Final dataset shape after preprocessing: {df_processed.shape}")
         logging.info("Training and comparing classifiers...")
         df_processed_attack, label_encoder, attack_mapping = pre_process_data_attack(df)
-        train_and_compare_classifiers(df_processed, smote_flag=SMOTE_FLAG)
+        train_and_compare_classifiers(df_processed, smote_flag=smote_flag)
         train_and_compare_classifiers_attack(df_processed_attack,smote_flag=SMOTE_FLAG_ATTACK, attack_mapping=attack_mapping)
         logging.info("Model training complete.")
     except Exception as e:
