@@ -7,7 +7,7 @@ import logging
 from scapy.utils import PcapReader
 from scapy.all import raw
 
-BATCH_SIZE = 100
+BATCH_SIZE = 1000
 PCAP_DIR = "dataset_files"
 
 def get_sorted_pcap_files():
@@ -32,7 +32,7 @@ def get_packet_batch(pcap_path, start_index, batch_size):
                 timestamp = getattr(pkt, 'time', time.time())
 
                 batch.append({
-                    "timestamp": str(timestamp).encode('utf-8'),
+                    "timestamp": str(timestamp),
                     "pcap_bytes": base64.b64encode(raw(pkt)).decode('utf-8')
                 })
 

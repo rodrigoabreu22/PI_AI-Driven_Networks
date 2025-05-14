@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 PCAP_FILE_PATH = "dataset_files"  
 
 logging.basicConfig(
-    filename='logs/data_producer.log',
+    filename='logs/nwdaf_collector.log',
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
@@ -44,7 +44,7 @@ class EventSubscription(BaseModel):
     event: str
     notificationURI: str
 
-@app.post("/nnwdaf-eventssubscription/v1/subscriptions", status_code=201)
+@app.post("/nnwdaf-eventssubscription/v1/subscriptions")
 def subscribe(event_sub: EventSubscription):
     sub_id = str(uuid4())
 
