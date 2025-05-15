@@ -22,11 +22,11 @@ async def discover_nf_instances(
                     "nfInstanceId": "6548c676-b19e-4018-ad41-d22cbee0b48a",
                     "nfType": "NWDAF",
                     "nfStatus": "REGISTERED",
-                    "ipv4Addresses": ["NWDAF-collector"],
+                    "ipv4Addresses": ["nwdaf_collector:8071"],
                 }
             ]
         }
-        return JSONResponse(content=response)
+        return JSONResponse(content=response, status_code=200)
     else:
         return JSONResponse(
             content={"error": f"NF type '{target_nf_type}' not supported"},
@@ -56,6 +56,12 @@ async def register_nf_instance(nfInstanceId: str, body: NFInstanceData):
         status_code=201
     )
 
+@app.get("/health")
+def health_check():
+    return JSONResponse(
+        content={"status": "OK"},
+        status_code=200
+    )
 
 if __name__ == "__main__":
     uvicorn.run("nrf:app", host="0.0.0.0", port=8070, reload=False)

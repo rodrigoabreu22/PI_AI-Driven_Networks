@@ -109,7 +109,6 @@ def consume_and_insert():
 
     for message in consumer:
         data = message.value
-        logging.info(f"Received message: {data}")
 
         row = transform_row(data)
         batch.append(row)
@@ -129,7 +128,7 @@ def insert_batch(client, rows):
             data=values,
             column_names=columns
         )
-        logging.info(f"Inserted {len(rows)} rows into ClickHouse.")
+
     except Exception as e:
         logging.error(f"Error inserting batch into ClickHouse: {e}")
 
