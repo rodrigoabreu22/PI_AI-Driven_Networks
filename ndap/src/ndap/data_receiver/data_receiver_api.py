@@ -11,10 +11,10 @@ from kafka.admin import KafkaAdminClient, NewTopic
 import uuid
 
 SUBSCRIPTION_ENDPOINT = "/nnwdaf-eventssubscription/v1/subscriptions"
-NRF_URL = "http://localhost:8070"
+NRF_URL = "http://nrf:8070"
 
 TOPIC_PUSH = "RAW_NETWORK_DATA_RECEIVED"
-BROKER = "localhost:29092"
+BROKER = "kafka:9092"
 
 packet_queue = asyncio.Queue()
 producer = None
@@ -81,7 +81,7 @@ async def lifespan(app: FastAPI):
         "nfInstanceId": nfInstanceId,
         "nfType": "NWDAF",
         "nfStatus": "REGISTERED",
-        "ipv4Addresses": ["localhost:8072"]
+        "ipv4Addresses": ["data_receiver:8072"]
     }
 
     # register with NRF
@@ -106,7 +106,7 @@ async def lifespan(app: FastAPI):
 
     payload = {
         "event": "PDU_SESSION_TRAFFIC",
-        "notificationURI": "http://localhost:8072/nwdaf-collector-notify"
+        "notificationURI": "http://data_receiver:8072/nwdaf-collector-notify"
     }
 
     response = requests.post(NWDAF_URL, json=payload)

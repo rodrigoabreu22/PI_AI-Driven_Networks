@@ -73,7 +73,7 @@ def subscribe(event_sub: EventSubscription):
         headers={"Location": location_url}
     )
 
-@app.get("/helath")
+@app.get("/health")
 def health_check():
     return JSONResponse(
         content={"status": "OK"},

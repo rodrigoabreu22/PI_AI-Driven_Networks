@@ -29,7 +29,7 @@ def create_topic(topic_name, broker, num_partitions=1, replication_factor=1):
             admin_client.create_topics([topic])
             logging.info(f"Topic '{topic_name}' created successfully.")
     except Exception as e:
-        print(f"Failed to create topic '{topic_name}': {e}")
+        logging.error(f"Failed to create topic '{topic_name}': {e}")
     finally:
         if admin_client is not None:
             admin_client.close()
@@ -40,7 +40,6 @@ def create_kafka_producer():
         bootstrap_servers=BROKER,
         value_serializer=lambda v: json.dumps(v).encode('utf-8')
     )
-    logging.info("Kafka producer started.")
     return producer
 
 def send_to_kafka(producer, topic, data):
@@ -58,7 +57,6 @@ def send_data():
     data = pd.read_csv("extracted.flows", sep=",", header=0)
 
     for row_dict in data.to_dict(orient='records'):
-        logging.info(f"Sending data to Kafka: {row_dict}")
         send_to_kafka(producer, TOPIC, row_dict)
 
     os.remove("extracted.flows")
@@ -164,11 +162,6 @@ def addGT(csv_file):
     os.remove(csv_file)
 
 def processor_main(file):
-    logging.basicConfig(
-        filename='logs/data_processor.log', 
-        level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s'
-    )
     create_topic(TOPIC, BROKER)
     run_nprobe(file)
     move_csv_files()

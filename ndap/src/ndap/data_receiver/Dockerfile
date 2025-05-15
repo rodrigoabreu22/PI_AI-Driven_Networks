@@ -7,4 +7,6 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY ./src/ndap/data_receiver /app
 
-CMD ["python", "data_receiver.py"]
+EXPOSE 8072
+
+CMD ["python", "data_receiver_api.py"]

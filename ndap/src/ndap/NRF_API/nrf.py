@@ -22,7 +22,7 @@ async def discover_nf_instances(
                     "nfInstanceId": "6548c676-b19e-4018-ad41-d22cbee0b48a",
                     "nfType": "NWDAF",
                     "nfStatus": "REGISTERED",
-                    "ipv4Addresses": ["localhost:8071"],
+                    "ipv4Addresses": ["nwdaf_collector:8071"],
                 }
             ]
         }
