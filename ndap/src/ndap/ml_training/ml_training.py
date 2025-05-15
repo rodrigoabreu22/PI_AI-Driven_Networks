@@ -114,6 +114,8 @@ def pre_process_data_attack(df):
     df = df.drop(columns=drop_cols, errors='ignore')
 
     for col in df.columns:
+        if col in ('Attack', 'Label'):
+            continue
         if df[col].dtype == 'object':
             try:
                 df[col] = df[col].astype(float)
@@ -272,7 +274,7 @@ def train_and_compare_classifiers_attack(df, smote_flag=0, attack_mapping=None):
 
     return models
 
-def deploy_model_to_inference_service(model_bytes, endpoint='http://0.0.0.0:8000/update-model'):
+def deploy_model_to_inference_service(model_bytes, endpoint='http://0.0.0.0:9050/update-model'):
     """Send the trained model (in memory) to the inference server."""
     logging.info(f"Deploying model to inference service at {endpoint}...")
     try:
@@ -285,7 +287,7 @@ def deploy_model_to_inference_service(model_bytes, endpoint='http://0.0.0.0:8000
     except Exception as e:
         logging.error(f"Exception during model deployment: {str(e)}")
 
-def deploy_model_to_inference_service_attack(model_bytes, endpoint='http://0.0.0.0:8000/update-model-attack'):
+def deploy_model_to_inference_service_attack(model_bytes, endpoint='http://0.0.0.0:9050/update-model-attack'):
     """Send the trained model (in memory) to the inference server."""
     logging.info(f"Deploying model to inference service at {endpoint}...")
     try:
@@ -298,7 +300,7 @@ def deploy_model_to_inference_service_attack(model_bytes, endpoint='http://0.0.0
     except Exception as e:
         logging.error(f"Exception during model deployment: {str(e)}")
 
-def send_attack_mapping(mapping, endpoint='http://0.0.0.0:8000/update-attack-mapping'):
+def send_attack_mapping(mapping, endpoint='http://0.0.0.0:9050/update-attack-mapping'):
     try:
         response = requests.post(endpoint, json=mapping)
         if response.status_code == 200:
