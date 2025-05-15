@@ -31,7 +31,7 @@ def create_kafka_consumer():
         value_deserializer=lambda v: json.loads(v.decode('utf-8'))
     )
 
-def fetch_data_flows_loop(batch_size=1000):
+def fetch_data_flows_loop(batch_size=10000):
     logging.info("Starting Kafka inference loop...")
 
     consumer = create_kafka_consumer()
