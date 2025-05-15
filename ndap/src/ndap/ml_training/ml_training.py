@@ -1,5 +1,4 @@
 import logging
-import clickhouse_connect
 import numpy as np
 from collections import Counter
 from sklearn.model_selection import train_test_split
@@ -14,16 +13,64 @@ from imblearn.pipeline import Pipeline as ImbPipeline
 from tabulate import tabulate #pip install tabulate
 import pickle
 import requests
+from kafka import KafkaConsumer
+import json
+import pandas as pd
 
 smote_flag = 1  # 0 = OFF, 1 = SMOTE, 2 = SMOTE + Undersampling
 SMOTE_FLAG_ATTACK = 1  # 0 = OFF, 1 = SMOTE, 2 = SMOTE + Undersampling
+BROKER = 'localhost:29092'
+TOPIC_PROCESSED_NETWORK_DATA = "PROCESSED_NETWORK_DATA"
 
-def fetch_data_flows(client):
-    """Fetch data from ClickHouse using clickhouse_connect."""
-    logging.info("Fetching new training data from ClickHouse...")
-    df = client.query_df("SELECT * FROM network_data")
-    logging.info(f"Fetched {len(df)} rows and {len(df.columns)} columns")
-    return df
+def create_kafka_consumer():
+    return KafkaConsumer(
+        TOPIC_PROCESSED_NETWORK_DATA,
+        bootstrap_servers=BROKER,
+        auto_offset_reset='earliest',
+        enable_auto_commit=True,
+        value_deserializer=lambda v: json.loads(v.decode('utf-8'))
+    )
+
+def fetch_data_flows_loop(batch_size=10000):
+    logging.info("Starting Kafka inference loop...")
+
+    consumer = create_kafka_consumer()
+    flow_buffer = []
+    i=0
+
+    for message in consumer:
+        try:
+            flow = message.value
+            flow_buffer.append(flow)
+            i+=1
+
+            if i >= batch_size:
+                logging.info(f"Processing batch of {len(flow_buffer)} flows...")
+
+                i=0
+
+                df = pd.DataFrame(flow_buffer)
+                logging.info(f"Loaded {len(df)} rows and {len(df.columns)} columns")
+
+                df_processed = pre_process_data(df)
+                logging.info(f"Processed batch shape: {df_processed.shape}")
+
+                rows_with_label_1 = df[df['Label'] == 1].shape[0]
+                logging.info(f"Rows with Label = 1: {df[df['Label'] == 1].shape[0]}")
+
+                smote_flag = 2
+                if rows_with_label_1 > 200:
+                    smote_flag = 1
+
+                logging.info("Training and comparing classifiers...")
+                df_processed_attack, label_encoder, attack_mapping = pre_process_data_attack(df)
+                train_and_compare_classifiers(df_processed, smote_flag=smote_flag)
+                train_and_compare_classifiers_attack(df_processed_attack,smote_flag=SMOTE_FLAG_ATTACK, attack_mapping=attack_mapping)
+                logging.info("Model training complete.")
+
+        except Exception as e:
+            logging.error(f"Error processing flow: {e}", exc_info=True)
+
 
 def pre_process_data(df):
     """Preprocess data for binary classification: Benign (0) vs. Attack (1)."""
@@ -36,7 +83,7 @@ def pre_process_data(df):
         'DNS_TTL_ANSWER', 'FTP_COMMAND_RET_CODE', 'Attack', 'id'
     ]
     logging.info(non_numeric_cols)
-    drop_cols = list(set(non_numeric_cols))  # Keep 'Attack' only
+    drop_cols = list(set(non_numeric_cols))
 
     df = df.drop(columns=drop_cols, errors='ignore')
 
@@ -67,6 +114,8 @@ def pre_process_data_attack(df):
     df = df.drop(columns=drop_cols, errors='ignore')
 
     for col in df.columns:
+        if col in ('Attack', 'Label'):
+            continue
         if df[col].dtype == 'object':
             try:
                 df[col] = df[col].astype(float)
@@ -225,7 +274,7 @@ def train_and_compare_classifiers_attack(df, smote_flag=0, attack_mapping=None):
 
     return models
 
-def deploy_model_to_inference_service(model_bytes, endpoint='http://0.0.0.0:8000/update-model'):
+def deploy_model_to_inference_service(model_bytes, endpoint='http://0.0.0.0:9050/update-model'):
     """Send the trained model (in memory) to the inference server."""
     logging.info(f"Deploying model to inference service at {endpoint}...")
     try:
@@ -238,7 +287,7 @@ def deploy_model_to_inference_service(model_bytes, endpoint='http://0.0.0.0:8000
     except Exception as e:
         logging.error(f"Exception during model deployment: {str(e)}")
 
-def deploy_model_to_inference_service_attack(model_bytes, endpoint='http://0.0.0.0:8000/update-model-attack'):
+def deploy_model_to_inference_service_attack(model_bytes, endpoint='http://0.0.0.0:9050/update-model-attack'):
     """Send the trained model (in memory) to the inference server."""
     logging.info(f"Deploying model to inference service at {endpoint}...")
     try:
@@ -251,7 +300,7 @@ def deploy_model_to_inference_service_attack(model_bytes, endpoint='http://0.0.0
     except Exception as e:
         logging.error(f"Exception during model deployment: {str(e)}")
 
-def send_attack_mapping(mapping, endpoint='http://0.0.0.0:8000/update-attack-mapping'):
+def send_attack_mapping(mapping, endpoint='http://0.0.0.0:9050/update-attack-mapping'):
     try:
         response = requests.post(endpoint, json=mapping)
         if response.status_code == 200:
@@ -273,33 +322,8 @@ def main():
     )
 
     try:
-        client = clickhouse_connect.get_client(
-            host='localhost',
-            port=8123,
-            username='network',
-            password='network25pi',
-            database='default'
-        )
-    except Exception as e:
-        logging.error(f"Error initializing clickhouse client: {str(e)}", exc_info=True)
-
-    try:
         logging.info("Starting the ML pipeline...")
-        df = fetch_data_flows(client)
-        logging.info(f"Loaded {len(df)} rows and {len(df.columns)} columns")
-        logging.info("Preprocessing data for Label...")
-        df_processed = pre_process_data(df)
-        rows_with_label_1 = df[df['Label'] == 1].shape[0]
-        logging.info(f"Rows with Label = 1: {df[df['Label'] == 1].shape[0]}")
-        smote_flag = 2
-        if rows_with_label_1 > 200:
-            smote_flag = 1
-        logging.info(f"Final dataset shape after preprocessing: {df_processed.shape}")
-        logging.info("Training and comparing classifiers...")
-        df_processed_attack, label_encoder, attack_mapping = pre_process_data_attack(df)
-        train_and_compare_classifiers(df_processed, smote_flag=smote_flag)
-        train_and_compare_classifiers_attack(df_processed_attack,smote_flag=SMOTE_FLAG_ATTACK, attack_mapping=attack_mapping)
-        logging.info("Model training complete.")
+        fetch_data_flows_loop()
     except Exception as e:
         logging.error(f"Error during training: {str(e)}", exc_info=True)
 
