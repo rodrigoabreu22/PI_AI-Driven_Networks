@@ -73,9 +73,12 @@ def subscribe(event_sub: EventSubscription):
         headers={"Location": location_url}
     )
 
-@app.get("/")
+@app.get("/helath")
 def health_check():
-    return {"status": "OK"}
+    return JSONResponse(
+        content={"status": "OK"},
+        status_code=200
+    )
 
 if __name__ == "__main__":
     uvicorn.run("nwdaf_collector:app", host="0.0.0.0", port=8071, reload=False)
