@@ -7,4 +7,6 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY ./src/ndap/data_relay/ /app
 
-CMD ["python", "data_relay.py"]
+EXPOSE 8073
+
+CMD ["python", "data_relay_api.py"]
