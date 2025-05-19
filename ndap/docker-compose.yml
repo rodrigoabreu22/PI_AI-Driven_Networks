@@ -70,6 +70,25 @@ services:
       timeout: 5s
       retries: 3
 
+  data_relay:
+    build: 
+      context: .
+      dockerfile: ./src/ndap/data_relay/Dockerfile
+    container_name: data_relay
+    restart: always
+    ports:
+      - "8073:8073"  # host:container
+    depends_on:
+      kafka:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8073/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
   influxdb_raw:
     image: influxdb:2.7
     container_name: influxdb_raw
@@ -203,17 +222,19 @@ services:
     volumes:
       - ./logs:/app/logs
 
-  dashboard_interface:
+  data_consumer:
     build: 
       context: .
       dockerfile: ./src/ndap/dashboard_interface/Dockerfile
-    container_name: dashboard_interface
+    container_name: data_consumer
     restart: always
+    ports:
+      - "8074:8074"  # host:container
     depends_on:
-      kafka:
-        condition: service_healthy
       influxdb_processed:
         condition: service_started
+      data_relay:
+        condition: service_healthy
     env_file:
       - .env
     environment:
@@ -248,18 +269,6 @@ services:
       nrf:
         condition: service_healthy
       nwdaf_collector:
-        condition: service_healthy
-    volumes:
-      - ./logs:/app/logs
-  
-  data_relay:
-    build: 
-      context: .
-      dockerfile: ./src/ndap/data_relay/Dockerfile
-    container_name: data_relay
-    restart: always
-    depends_on:
-      kafka:
         condition: service_healthy
     volumes:
       - ./logs:/app/logs
