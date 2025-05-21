@@ -136,7 +136,7 @@ async def receive_data(data: dict):
         packets = data.get("pcap", [])
         for pkt in packets:
             raw_bytes = base64.b64decode(pkt["pcap_bytes"])
-            timestamp = pkt.get("timestamp", "")
+            timestamp = pkt.get("timestamp", "") 
 
             await packet_queue.put({
                 "value": raw_bytes,
@@ -148,6 +148,13 @@ async def receive_data(data: dict):
     except Exception as e:
         logging.error(f"Error processing data: {e}")
         return JSONResponse(content={"status": "error", "message": str(e)}, status_code=500)
+    
+@app.get("/health")
+def health_check():
+    return JSONResponse(
+        content={"status": "OK"},
+        status_code=200
+    )
     
 if __name__ == "__main__":
     uvicorn.run("data_receiver_api:app", host="0.0.0.0", port=8072, reload=False)
