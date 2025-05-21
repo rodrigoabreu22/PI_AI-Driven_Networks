@@ -47,6 +47,9 @@ services:
     restart: always
     ports:
       - "8071:8071"  # host:container
+    depends_on:
+      kafka:
+        condition: service_healthy
     volumes:
       - ./dataset_files:/app/dataset_files
       - ./logs:/app/logs
