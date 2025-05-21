@@ -18,7 +18,7 @@ INFLUXDB_ORG = os.getenv("INFLUXDB_ORG")
 INFLUXDB_BUCKET = os.getenv("INFLUXDB_BUCKET")
 KAFKA_TOPIC = "DATA_TO_BE_PROCESSED"
 KAFKA_BROKER = 'kafka:9092'
-CHECK_INTERVAL = 10  
+CHECK_INTERVAL = 5
 EMPTY_DB_WAIT_TIME = 5  
 
 # Initialize InfluxDB client
@@ -185,7 +185,7 @@ def main():
 
         except Exception as e:
             logging.error(f"Error: {e}", exc_info=True)
-            time.sleep(10)
+            time.sleep(1)
 
 
 def decode_packet(packet):

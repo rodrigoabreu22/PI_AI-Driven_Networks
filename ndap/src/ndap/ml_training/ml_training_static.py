@@ -11,24 +11,34 @@ from imblearn.under_sampling import RandomUnderSampler
 from imblearn.pipeline import Pipeline as ImbPipeline
 from tabulate import tabulate #pip install tabulate
 import pickle
+import clickhouse_connect
 
-NROWS = 20000
-SMOTE_FLAG = 2  # 0 = OFF, 1 = SMOTE, 2 = SMOTE + Undersampling
+SMOTE_FLAG = 2
 
-def load_csv_data(filepath):
-    df = pd.read_csv(filepath, nrows=NROWS)
+def fetch_data_flows(client):
+    """Fetch data from ClickHouse using clickhouse_connect."""
+    logging.info("Fetching new training data from ClickHouse...")
+    df = client.query_df("SELECT * FROM network_data")
+    logging.info(f"Fetched {len(df)} rows and {len(df.columns)} columns")
     return df
 
+
 def pre_process_data(df):
+    """Preprocess data for binary classification: Benign (0) vs. Attack (1)."""
+    logging.info("Preprocessing data...")
+
+    # Columns to drop
     cols_to_drop = [
-        'FLOW_START_MILLISECONDS','FLOW_END_MILLISECONDS',
-        'IPV4_SRC_ADDR','L4_SRC_PORT','IPV4_DST_ADDR','L4_DST_PORT',
-        'ICMP_TYPE','ICMP_IPV4_TYPE','DNS_QUERY_ID','DNS_QUERY_TYPE',
-        'DNS_TTL_ANSWER','FTP_COMMAND_RET_CODE','Attack'
+        'FLOW_START_MILLISECONDS', 'FLOW_END_MILLISECONDS',
+        'IPV4_SRC_ADDR', 'L4_SRC_PORT', 'IPV4_DST_ADDR', 'L4_DST_PORT',
+        'ICMP_TYPE', 'ICMP_IPV4_TYPE', 'DNS_QUERY_ID', 'DNS_QUERY_TYPE',
+        'DNS_TTL_ANSWER', 'FTP_COMMAND_RET_CODE', 'Attack', 'id'
     ]
     df = df.drop(columns=[col for col in cols_to_drop if col in df.columns], errors='ignore')
+
+    # Handle object/string columns
     non_numeric_cols = df.select_dtypes(include=['object', 'string']).columns.tolist()
-    drop_cols = list(set(non_numeric_cols) - set(['Label']))
+    drop_cols = list(set(non_numeric_cols) - set(['Label']))  # keep 'Label'
     df = df.drop(columns=drop_cols, errors='ignore')
 
     for col in df.columns:
@@ -36,14 +46,27 @@ def pre_process_data(df):
             try:
                 df[col] = df[col].astype(float)
             except ValueError:
-                df = df.drop(columns=[col])
+                logging.warning(f"Dropping non-numeric column: {col}")
+                df = df.drop(columns=[col], errors='ignore')
 
+    # Replace infs and drop NaNs
     df = df.replace([np.inf, -np.inf], np.nan).dropna()
 
+    # Ensure Label column exists
     if 'Label' not in df.columns:
         raise ValueError("'Label' column is required for classification")
 
+    # Convert Label if needed
+    if df['Label'].dtype == 'object':
+        df['Label'] = df['Label'].str.lower().map({'benign': 0, 'attack': 1})
+        if df['Label'].isnull().any():
+            raise ValueError("Label column contains unknown string values.")
+
+    df['Label'] = df['Label'].astype(int)
+
+    logging.info("Preprocessing completed.")
     return df
+
 
 def train_and_compare_classifiers(df, smote_flag=1):
     feature_cols = [col for col in df.columns if col != 'Label']
@@ -79,7 +102,7 @@ def train_and_compare_classifiers(df, smote_flag=1):
         clf.fit(X_train, y_train)
         y_pred = clf.predict(X_test)
         report = classification_report(y_test, y_pred, output_dict=True, zero_division=0)
-        weighted_f1 = report['weighted avg']['f1-score']
+        weighted_f1 = report['macro avg']['f1-score']
         mcc = matthews_corrcoef(y_test, y_pred)
         results.append([name, f"{weighted_f1:.4f}", f"{mcc:.4f}"])
         models[name] = clf
@@ -121,8 +144,19 @@ def main():
     )
 
     try:
+        client = clickhouse_connect.get_client(
+            host='localhost',
+            port=8123,
+            username='network',
+            password='network25pi',
+            database='default'
+        )
+    except Exception as e:
+        logging.error(f"Error initializing clickhouse client: {str(e)}", exc_info=True)
+
+    try:
         logging.info("Starting the CSV-based ML pipeline...")
-        df = load_csv_data('data.csv')
+        df = fetch_data_flows(client)
         logging.info(f"Loaded {len(df)} rows and {len(df.columns)} columns")
         logging.info("Preprocessing data...")
         df_processed = pre_process_data(df)
