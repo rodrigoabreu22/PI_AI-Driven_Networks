@@ -14,7 +14,7 @@ from data_processor import processor_main
 # Configuration
 TOPIC_RAW_DATA_RCV = "RAW_NETWORK_DATA_RECEIVED"
 BROKER = 'kafka:9092'  
-PACKET_BATCH_SIZE = 100
+PACKET_BATCH_SIZE = 1000
 
 load_dotenv()
 

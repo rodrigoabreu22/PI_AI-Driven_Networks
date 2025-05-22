@@ -17,28 +17,27 @@ def get_sorted_pcap_files():
         key=lambda x: int(os.path.splitext(os.path.basename(x))[0])
     )
 
-def get_packet_batch(pcap_path, start_index, batch_size):
-    """Reads a batch of packets from the PCAP file, starting at a given index."""
+def get_packet_batch_from_reader(reader, batch_size):
     batch = []
-    with PcapReader(pcap_path) as reader:
-        for i, pkt in enumerate(reader):
-            if i < start_index:
-                continue
-            
-            if i >= start_index + batch_size:
-                break
+    count = 0
 
-            try:
-                timestamp = getattr(pkt, 'time', time.time())
+    while count < batch_size:
+        try:
+            pkt = reader.read_packet()
+            if pkt is None:
+                break  # EOF
+            timestamp = getattr(pkt, 'time', time.time())
+            batch.append({
+                "timestamp": str(timestamp),
+                "pcap_bytes": base64.b64encode(raw(pkt)).decode('utf-8')
+            })
+            count += 1
+        except Exception as e:
+            logging.info(f"Error reading packet: {e}")
+            break
 
-                batch.append({
-                    "timestamp": str(timestamp),
-                    "pcap_bytes": base64.b64encode(raw(pkt)).decode('utf-8')
-                })
-
-            except Exception as e:
-                logging.info(f"Error processing packet {i}: {e}")
     return batch
+
 
 def subscription_callback_worker(subscriptions, _, subscription_ready_event):
     subscription_ready_event.wait()
@@ -52,21 +51,32 @@ def subscription_callback_worker(subscriptions, _, subscription_ready_event):
         for sub_id, sub in list(subscriptions.items()):
             uri = sub['notificationURI']
             file_idx = sub.get('file_index', 0)
-            packet_idx = sub.get('last_index', 0)
 
             if file_idx >= len(pcap_files):
                 logging.info(f"Subscription {sub_id} finished all files.")
                 continue
 
             current_pcap = pcap_files[file_idx]
-            packet_batch = get_packet_batch(current_pcap, packet_idx, BATCH_SIZE)
+
+            # Open PcapReader if not already open
+            if 'pcap_reader' not in sub:
+                try:
+                    sub['pcap_reader'] = PcapReader(current_pcap)
+                    logging.info(f"Opened PcapReader for subscription {sub_id}, file {current_pcap}")
+                except Exception as e:
+                    logging.info(f"Failed to open PCAP file for {sub_id}: {e}")
+                    continue
+
+            reader = sub['pcap_reader']
+            packet_batch = get_packet_batch_from_reader(reader, BATCH_SIZE)
 
             if not packet_batch:
-                # Move to next file
-                subscriptions[sub_id]['file_index'] = file_idx + 1
-                subscriptions[sub_id]['last_index'] = 0
-
-                logging.info(f"Moving subscription {sub_id} to next file.")
+                # End of file
+                reader.close()
+                sub.pop('pcap_reader', None)
+                sub['file_index'] = file_idx + 1
+                sub['last_index'] = 0
+                logging.info(f"Finished file {current_pcap}, moving subscription {sub_id} to next file.")
                 continue
 
             payload = {
@@ -76,13 +86,10 @@ def subscription_callback_worker(subscriptions, _, subscription_ready_event):
 
             try:
                 response = requests.post(uri, json=payload)
-
                 if response.status_code == 200:
-                    subscriptions[sub_id]['last_index'] = packet_idx + BATCH_SIZE
-
+                    sub['last_index'] = sub.get('last_index', 0) + BATCH_SIZE
                 else:
                     logging.info(f"Error {response.status_code} from {uri}")
-
             except Exception as e:
                 logging.info(f"Failed to notify {uri}: {e}")
 

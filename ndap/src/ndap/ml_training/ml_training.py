@@ -17,8 +17,8 @@ from kafka import KafkaConsumer
 import json
 import pandas as pd
 
-smote_flag = 1  # 0 = OFF, 1 = SMOTE, 2 = SMOTE + Undersampling
-SMOTE_FLAG_ATTACK = 1  # 0 = OFF, 1 = SMOTE, 2 = SMOTE + Undersampling
+SMOTE_FLAG = 2  # 0 = OFF, 1 = SMOTE, 2 = SMOTE + Undersampling
+SMOTE_FLAG_ATTACK = 2  # 0 = OFF, 1 = SMOTE, 2 = SMOTE + Undersampling
 BROKER = 'localhost:29092'
 TOPIC_PROCESSED_NETWORK_DATA = "PROCESSED_NETWORK_DATA"
 
@@ -31,7 +31,7 @@ def create_kafka_consumer():
         value_deserializer=lambda v: json.loads(v.decode('utf-8'))
     )
 
-def fetch_data_flows_loop(batch_size=10000):
+def fetch_data_flows_loop(batch_size=5000):
     logging.info("Starting Kafka inference loop...")
 
     consumer = create_kafka_consumer()
@@ -58,19 +58,60 @@ def fetch_data_flows_loop(batch_size=10000):
                 rows_with_label_1 = df[df['Label'] == 1].shape[0]
                 logging.info(f"Rows with Label = 1: {df[df['Label'] == 1].shape[0]}")
 
-                smote_flag = 2
-                if rows_with_label_1 > 200:
-                    smote_flag = 1
-
                 logging.info("Training and comparing classifiers...")
                 df_processed_attack, label_encoder, attack_mapping = pre_process_data_attack(df)
-                train_and_compare_classifiers(df_processed, smote_flag=smote_flag)
+                train_and_compare_classifiers(df_processed, smote_flag=SMOTE_FLAG)
                 train_and_compare_classifiers_attack(df_processed_attack,smote_flag=SMOTE_FLAG_ATTACK, attack_mapping=attack_mapping)
                 logging.info("Model training complete.")
 
         except Exception as e:
             logging.error(f"Error processing flow: {e}", exc_info=True)
 
+def optimize_dataframe_dtypes(df):
+    dtype_mapping = {
+        'PROTOCOL': 'uint8',
+        'L7_PROTO': 'float32',
+        'IN_BYTES': 'uint32',
+        'IN_PKTS': 'uint32',
+        'OUT_BYTES': 'uint32',
+        'OUT_PKTS': 'uint32',
+        'TCP_FLAGS': 'uint8',
+        'CLIENT_TCP_FLAGS': 'uint8',
+        'SERVER_TCP_FLAGS': 'uint8',
+        'FLOW_DURATION_MILLISECONDS': 'uint32',
+        'DURATION_IN': 'uint32',
+        'DURATION_OUT': 'uint32',
+        'MIN_TTL': 'uint8',
+        'MAX_TTL': 'uint8',
+        'LONGEST_FLOW_PKT': 'uint16',
+        'SHORTEST_FLOW_PKT': 'uint16',
+        'MIN_IP_PKT_LEN': 'uint16',
+        'MAX_IP_PKT_LEN': 'uint16',
+        'RETRANSMITTED_IN_BYTES': 'uint32',
+        'RETRANSMITTED_IN_PKTS': 'uint32',
+        'RETRANSMITTED_OUT_BYTES': 'uint32',
+        'RETRANSMITTED_OUT_PKTS': 'uint32',
+        'SRC_TO_DST_AVG_THROUGHPUT': 'uint64',
+        'DST_TO_SRC_AVG_THROUGHPUT': 'uint64',
+        'NUM_PKTS_UP_TO_128_BYTES': 'uint16',
+        'NUM_PKTS_128_TO_256_BYTES': 'uint16',
+        'NUM_PKTS_256_TO_512_BYTES': 'uint16',
+        'NUM_PKTS_512_TO_1024_BYTES': 'uint16',
+        'NUM_PKTS_1024_TO_1514_BYTES': 'uint16',
+        'TCP_WIN_MAX_IN': 'uint32',
+        'TCP_WIN_MAX_OUT': 'uint32',
+        'Label': 'uint8',
+        'Attack': 'string'
+    }
+
+    for col, dtype in dtype_mapping.items():
+        if col in df.columns:
+            try:
+                df[col] = df[col].astype(dtype)
+            except Exception as e:
+                logging.warning(f"Could not convert column {col} to {dtype}: {e}")
+    
+    return df
 
 def pre_process_data(df):
     """Preprocess data for binary classification: Benign (0) vs. Attack (1)."""
@@ -86,6 +127,7 @@ def pre_process_data(df):
     drop_cols = list(set(non_numeric_cols))
 
     df = df.drop(columns=drop_cols, errors='ignore')
+    df = optimize_dataframe_dtypes(df)
 
     # Convert object columns to numeric if possible, drop if not
     for col in df.columns:
@@ -112,6 +154,7 @@ def pre_process_data_attack(df):
     ]
     drop_cols = list(set(non_numeric_cols) - {'Attack'})
     df = df.drop(columns=drop_cols, errors='ignore')
+    df = optimize_dataframe_dtypes(df)
 
     for col in df.columns:
         if col in ('Attack', 'Label'):
@@ -142,6 +185,16 @@ def pre_process_data_attack(df):
     logging.info(f"Filtered dataset to only rows with Label = 1. New shape: {df.shape}")
     logging.info(f"Attack class distribution after filtering:\n{df['Attack'].value_counts()}")
     logging.info(f"Final dataset shape after preprocessing: {df.shape}")
+
+    # Ensure all columns are shown
+    pd.set_option('display.max_columns', None)
+
+    # Ensure wide content in columns is fully shown
+    pd.set_option('display.max_colwidth', None)
+
+    # Print the full row
+    print(df.sample(4))
+    
     return df, label_encoder, attack_mapping
 
 def train_and_compare_classifiers(df, smote_flag=0):
@@ -149,7 +202,7 @@ def train_and_compare_classifiers(df, smote_flag=0):
     X = df[feature_cols]
     y = df['Label']
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
     if smote_flag == 1:
         smote = SMOTE(random_state=42)
@@ -211,7 +264,15 @@ def train_and_compare_classifiers_attack(df, smote_flag=0, attack_mapping=None):
     X = df[feature_cols]
     y = df['Attack']
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    try:
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42, stratify=y
+        )
+    except ValueError as e:
+        logging.warning(f"Stratified split failed: {e}. Using unstratified split instead.")
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42
+        )
 
     if smote_flag == 1:
         class_counts = Counter(y_train)
@@ -316,7 +377,7 @@ def main():
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s',
         handlers=[
-            logging.FileHandler('ml_logs_csv.log'),
+            logging.FileHandler('ml_logs_csv2.log'),
             logging.StreamHandler()
         ]
     )

@@ -63,9 +63,9 @@ def receive_and_push_data():
     
     while True:
         for message in consumer:
-            logging.info(f"Received: {message.value}")
+            #logging.info(f"Received: {message.value}")
             send_to_kafka(producer, TOPIC_PUSH, message.value)
-            logging.info(f"Forwarded to {TOPIC_PUSH}: {message.value}")
+            #logging.info(f"Forwarded to {TOPIC_PUSH}: {message.value}")
         time.sleep(1)  # Avoids busy looping
 
 def main():

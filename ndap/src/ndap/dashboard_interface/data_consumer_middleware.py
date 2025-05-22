@@ -46,8 +46,8 @@ def store_data(data):
 
     try:
         write_api.write(bucket=INFLUXDB_BUCKET, org=INFLUXDB2_ORG, record=point)
-        logging.info(f"Written to InfluxDB: {json.dumps(data, default=str)}")
-        logging.info(f"Writing data with timestamp: {timestamp}")
+        #logging.info(f"Written to InfluxDB: {json.dumps(data, default=str)}")
+        #logging.info(f"Writing data with timestamp: {timestamp}")
     except Exception as e:
         logging.error(f"Error writing to InfluxDB: {e}")
 
