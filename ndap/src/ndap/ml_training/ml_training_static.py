@@ -65,6 +65,15 @@ def pre_process_data(df):
     df['Label'] = df['Label'].astype(int)
 
     logging.info("Preprocessing completed.")
+
+    # Ensure all columns are shown
+    pd.set_option('display.max_columns', None)
+
+    # Ensure wide content in columns is fully shown
+    pd.set_option('display.max_colwidth', None)
+
+    # Print the full row
+    print(df.sample(10))
     return df
 
 

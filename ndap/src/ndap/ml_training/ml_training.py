@@ -193,7 +193,7 @@ def pre_process_data_attack(df):
     pd.set_option('display.max_colwidth', None)
 
     # Print the full row
-    print(df.sample(1))
+    print(df.sample(4))
     
     return df, label_encoder, attack_mapping
 
@@ -377,7 +377,7 @@ def main():
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s',
         handlers=[
-            logging.FileHandler('ml_logs_csv.log'),
+            logging.FileHandler('ml_logs_csv2.log'),
             logging.StreamHandler()
         ]
     )
