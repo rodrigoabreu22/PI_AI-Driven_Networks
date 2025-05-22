@@ -165,3 +165,6 @@ def main():
     row_count = 20000  # Number of rows to fetch
     result = train_model_by_id(model_id, row_count)
     print(result)
+
+if __name__ == "__main__":
+    main()
