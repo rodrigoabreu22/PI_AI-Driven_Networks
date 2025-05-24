@@ -16,6 +16,7 @@ import requests
 from kafka import KafkaConsumer
 import json
 import pandas as pd
+import clickhouse_connect
 
 SMOTE_FLAG = 2  # 0 = OFF, 1 = SMOTE, 2 = SMOTE + Undersampling
 SMOTE_FLAG_ATTACK = 2  # 0 = OFF, 1 = SMOTE, 2 = SMOTE + Undersampling
@@ -31,13 +32,41 @@ def create_kafka_consumer():
         value_deserializer=lambda v: json.loads(v.decode('utf-8'))
     )
 
+#function to fecth rows from clickhouse
+def fetch_data_flows(client):
+    """Fetch data from ClickHouse using clickhouse_connect."""
+    logging.info("Fetching new training data from ClickHouse...")
+    df = client.query_df("SELECT * FROM network_data")
+    logging.info(f"Fetched {len(df)} rows and {len(df.columns)} columns")
+    return df
+
 def fetch_data_flows_loop(batch_size=5000):
     logging.info("Starting Kafka inference loop...")
 
     consumer = create_kafka_consumer()
     flow_buffer = []
+
     i=0
 
+    try:
+        client = clickhouse_connect.get_client(
+            host='localhost',
+            port=8123,
+            username='network',
+            password='network25pi',
+            database='default'
+        )
+
+        db_df = fetch_data_flows(client)
+    
+        if len(db_df)>0:
+            i=len(db_df)%5000
+            flow_buffer.extend(db_df.to_dict(orient='records'))
+
+    except Exception as e:
+        logging.error(f"Error initializing clickhouse client: {str(e)}", exc_info=True)
+        
+    
     for message in consumer:
         try:
             flow = message.value
@@ -56,7 +85,7 @@ def fetch_data_flows_loop(batch_size=5000):
                 logging.info(f"Processed batch shape: {df_processed.shape}")
 
                 rows_with_label_1 = df[df['Label'] == 1].shape[0]
-                logging.info(f"Rows with Label = 1: {df[df['Label'] == 1].shape[0]}")
+                logging.info(f"Rows with Label = 1: {rows_with_label_1}")
 
                 logging.info("Training and comparing classifiers...")
                 df_processed_attack, label_encoder, attack_mapping = pre_process_data_attack(df)

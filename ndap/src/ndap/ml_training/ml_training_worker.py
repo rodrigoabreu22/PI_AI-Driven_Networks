@@ -86,7 +86,7 @@ def pre_process_data(df):
     
     return df
 
-def train_model_by_id(model_id, row_count):
+def train_model_by_id(model_id):
     model_map = {
         0: ("Random Forest", RandomForestClassifier(n_estimators=100, random_state=42)),
         1: ("Gradient Boosting", GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, random_state=42)),
@@ -106,8 +106,8 @@ def train_model_by_id(model_id, row_count):
             password='network25pi',
             database='default'
         )
-        query = f"SELECT * FROM network_data LIMIT {row_count}"
-        logging.info(f"Fetching {row_count} rows from ClickHouse...")
+        query = f"SELECT * FROM network_data"
+        logging.info(f"Fetching rows from ClickHouse...")
         df = client.query_df(query)
     except Exception as e:
         logging.error("Failed to fetch data from ClickHouse", exc_info=True)
@@ -131,7 +131,7 @@ def train_model_by_id(model_id, row_count):
         y_pred = model.predict(X_test)
 
         report = classification_report(y_test, y_pred, output_dict=True, zero_division=0)
-        mcc = matthews_corrcoef(y_test, y_pred)
+        mcc = float(matthews_corrcoef(y_test, y_pred))
         accuracy = accuracy_score(y_test, y_pred)
 
         metrics = {
@@ -149,22 +149,3 @@ def train_model_by_id(model_id, row_count):
     except Exception as e:
         logging.error("Error during model training or evaluation", exc_info=True)
         return {"error": "Training/evaluation failed"}
-
-def main():
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.FileHandler('ml_logs_csv.log'),
-            logging.StreamHandler()
-        ]
-    )
-
-    # Example usage
-    model_id = 0  # Random Forest
-    row_count = 20000  # Number of rows to fetch
-    result = train_model_by_id(model_id, row_count)
-    print(result)
-
-if __name__ == "__main__":
-    main()
