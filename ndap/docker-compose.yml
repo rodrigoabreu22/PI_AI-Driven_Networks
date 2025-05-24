@@ -203,27 +203,6 @@ services:
       - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
     volumes:
       - ./logs:/app/logs
-  
-  data_raw_extractor:
-    build: 
-      context: .
-      dockerfile: ./src/ndap/data_storage/Dockerfile.extractor
-    container_name: data_raw_extractor
-    restart: always
-    depends_on:
-      influxdb_raw:
-        condition: service_started
-      kafka:
-        condition: service_healthy
-    env_file:
-      - .env
-    environment:
-      - INFLUXDB_URL=http://influxdb_raw:8087
-      - INFLUXDB_BUCKET=${INFLUXDB_BUCKET}
-      - INFLUXDB_ORG=${INFLUXDB_ORG}
-      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
-    volumes:
-      - ./logs:/app/logs
 
   data_consumer:
     build: 
@@ -273,6 +252,54 @@ services:
         condition: service_healthy
       nwdaf_collector:
         condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+
+  ml_inference_api:
+    build: 
+      context: .
+      dockerfile: ./src/ndap/ml_inference/Dockerfile
+    container_name: ml_inference_api
+    restart: always
+    ports:
+      - "9050:9050"  # host:container
+    depends_on:
+      kafka:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+
+  ml_training_api:
+    build: 
+      context: .
+      dockerfile: ./src/ndap/ml_training/Dockerfile.api
+    container_name: ml_training_api
+    restart: always
+    ports:
+      - "8075:8075"  # host:container
+    depends_on:
+      kafka:
+        condition: service_healthy
+      clickhouse:
+        condition: service_started
+    volumes:
+      - ./logs:/app/logs
+
+  ml_training:
+    build: 
+      context: .
+      dockerfile: ./src/ndap/ml_training/Dockerfile.train
+    container_name: ml_training
+    restart: always
+    depends_on:
+      kafka:
+        condition: service_healthy
+      data_processor:
+        condition: service_started
+      clickhouse:
+        condition: service_started
+      ml_inference_api:
+        condition: service_started
     volumes:
       - ./logs:/app/logs
 
