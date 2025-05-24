@@ -104,8 +104,7 @@ def start_kafka_inference_loop():
     producer = create_kafka_producer()
 
     while binary_model is None:
-        logging.info("Waiting for model to be loaded...")
-        time.sleep(360)
+        time.sleep(10)
 
     logging.info("Kafka consumer and model are ready.")
 
