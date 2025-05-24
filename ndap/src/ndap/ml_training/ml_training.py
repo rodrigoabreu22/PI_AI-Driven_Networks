@@ -20,7 +20,7 @@ import clickhouse_connect
 
 SMOTE_FLAG = 2  # 0 = OFF, 1 = SMOTE, 2 = SMOTE + Undersampling
 SMOTE_FLAG_ATTACK = 2  # 0 = OFF, 1 = SMOTE, 2 = SMOTE + Undersampling
-BROKER = 'localhost:29092'
+BROKER = 'kafka:9092'
 TOPIC_PROCESSED_NETWORK_DATA = "PROCESSED_NETWORK_DATA"
 
 def create_kafka_consumer():
@@ -35,14 +35,10 @@ def create_kafka_consumer():
 #function to fecth rows from clickhouse
 def fetch_data_flows(client):
     """Fetch data from ClickHouse using clickhouse_connect."""
-    logging.info("Fetching new training data from ClickHouse...")
     df = client.query_df("SELECT * FROM network_data")
-    logging.info(f"Fetched {len(df)} rows and {len(df.columns)} columns")
     return df
 
 def fetch_data_flows_loop(batch_size=5000):
-    logging.info("Starting Kafka inference loop...")
-
     consumer = create_kafka_consumer()
     flow_buffer = []
 
@@ -50,7 +46,7 @@ def fetch_data_flows_loop(batch_size=5000):
 
     try:
         client = clickhouse_connect.get_client(
-            host='localhost',
+            host='clickhouse',
             port=8123,
             username='network',
             password='network25pi',
@@ -74,24 +70,16 @@ def fetch_data_flows_loop(batch_size=5000):
             i+=1
 
             if i >= batch_size:
-                logging.info(f"Processing batch of {len(flow_buffer)} flows...")
-
                 i=0
 
                 df = pd.DataFrame(flow_buffer)
-                logging.info(f"Loaded {len(df)} rows and {len(df.columns)} columns")
-
                 df_processed = pre_process_data(df)
-                logging.info(f"Processed batch shape: {df_processed.shape}")
 
                 rows_with_label_1 = df[df['Label'] == 1].shape[0]
-                logging.info(f"Rows with Label = 1: {rows_with_label_1}")
 
-                logging.info("Training and comparing classifiers...")
                 df_processed_attack, label_encoder, attack_mapping = pre_process_data_attack(df)
                 train_and_compare_classifiers(df_processed, smote_flag=SMOTE_FLAG)
                 train_and_compare_classifiers_attack(df_processed_attack,smote_flag=SMOTE_FLAG_ATTACK, attack_mapping=attack_mapping)
-                logging.info("Model training complete.")
 
         except Exception as e:
             logging.error(f"Error processing flow: {e}", exc_info=True)
@@ -144,7 +132,6 @@ def optimize_dataframe_dtypes(df):
 
 def pre_process_data(df):
     """Preprocess data for binary classification: Benign (0) vs. Attack (1)."""
-    logging.info("Preprocess data for binary classification: Benign (0) vs. Attack (1)...")
     # Drop string columns not useful for training
     non_numeric_cols = [
         'FLOW_START_MILLISECONDS', 'FLOW_END_MILLISECONDS',
@@ -152,7 +139,7 @@ def pre_process_data(df):
         'ICMP_TYPE', 'ICMP_IPV4_TYPE', 'DNS_QUERY_ID', 'DNS_QUERY_TYPE',    # Drop string columns not useful for training
         'DNS_TTL_ANSWER', 'FTP_COMMAND_RET_CODE', 'Attack', 'id'
     ]
-    logging.info(non_numeric_cols)
+
     drop_cols = list(set(non_numeric_cols))
 
     df = df.drop(columns=drop_cols, errors='ignore')
@@ -173,8 +160,6 @@ def pre_process_data(df):
     return df
 
 def pre_process_data_attack(df):
-    logging.info("Preprocessing data for the attack type...")
-
     non_numeric_cols = [
         'FLOW_START_MILLISECONDS', 'FLOW_END_MILLISECONDS',
         'IPV4_SRC_ADDR', 'L4_SRC_PORT', 'IPV4_DST_ADDR', 'L4_DST_PORT',
@@ -204,16 +189,11 @@ def pre_process_data_attack(df):
     # Encode attack labels directly
     df['Attack'] = label_encoder.fit_transform(df['Attack'])
     attack_mapping = dict(zip(label_encoder.classes_, range(len(label_encoder.classes_))))
-    logging.info(f"Attack labels encoded: {attack_mapping}")
-
     
     # Filter to only rows where Label == 1
     if 'Label' not in df.columns:
         raise ValueError("'Label' column is missing from the dataset")
     df = df[df['Label'] == 1]
-    logging.info(f"Filtered dataset to only rows with Label = 1. New shape: {df.shape}")
-    logging.info(f"Attack class distribution after filtering:\n{df['Attack'].value_counts()}")
-    logging.info(f"Final dataset shape after preprocessing: {df.shape}")
 
     # Ensure all columns are shown
     pd.set_option('display.max_columns', None)
@@ -236,13 +216,13 @@ def train_and_compare_classifiers(df, smote_flag=0):
     if smote_flag == 1:
         smote = SMOTE(random_state=42)
         X_train, y_train = smote.fit_resample(X_train, y_train)
-        logging.info("SMOTE applied.")
+
     elif smote_flag == 2:
         smote = SMOTE(random_state=42)
         undersample = RandomUnderSampler(random_state=42)
         pipeline = ImbPipeline([('o', smote), ('u', undersample)])
         X_train, y_train = pipeline.fit_resample(X_train, y_train)
-        logging.info("SMOTE and undersampling applied.")
+
     elif smote_flag == 0:
         logging.info("SMOTE flag set to 0, no resampling will be applied.")
 
@@ -259,7 +239,6 @@ def train_and_compare_classifiers(df, smote_flag=0):
     for name, clf in classifiers.items():
         clf.fit(X_train, y_train)
         y_pred = clf.predict(X_test)
-        logging.info(f"{name} results:\n{classification_report(y_test, y_pred, zero_division=0)}\n")
         report = classification_report(y_test, y_pred, output_dict=True, zero_division=0)
         f1_score_value = report['macro avg']['f1-score']
         mcc = matthews_corrcoef(y_test, y_pred)
@@ -273,19 +252,15 @@ def train_and_compare_classifiers(df, smote_flag=0):
 
     # Serialize model to memory (no file)
     model_bytes = pickle.dumps(best_model)
-    logging.info("Best model serialized to memory.")
 
     deploy_model_to_inference_service(model_bytes)
 
     headers = ["Model", "F1 Score", "Matthews Corr Coef"]
     summary_table = tabulate(results, headers=headers, tablefmt='grid')
-    logging.info("\n=== Model Performance Summary ===\n" + summary_table)
 
     return models
 
 def train_and_compare_classifiers_attack(df, smote_flag=0, attack_mapping=None):
-    logging.info("Training and comparing classifiers...")
-
     if 'Attack' not in df.columns:
         raise ValueError("'Attack' column not found in DataFrame")
 
@@ -310,7 +285,7 @@ def train_and_compare_classifiers_attack(df, smote_flag=0, attack_mapping=None):
             k_neighbors = max(1, min(min_class_size - 1, 5))
             smote = SMOTE(random_state=42, k_neighbors=k_neighbors)
             X_train, y_train = smote.fit_resample(X_train, y_train)
-            logging.info(f"SMOTE applied with k_neighbors={k_neighbors}.")
+
         else:
             logging.warning("SMOTE skipped due to insufficient samples in at least one class.")
     elif smote_flag == 2:
@@ -322,7 +297,7 @@ def train_and_compare_classifiers_attack(df, smote_flag=0, attack_mapping=None):
             undersample = RandomUnderSampler(random_state=42)
             pipeline = ImbPipeline([('smote', smote), ('under', undersample)])
             X_train, y_train = pipeline.fit_resample(X_train, y_train)
-            logging.info(f"SMOTE + UnderSampler applied with k_neighbors={k_neighbors}.")
+
         else:
             logging.warning("SMOTE + UnderSampler skipped due to insufficient samples.")
     else:
@@ -338,35 +313,31 @@ def train_and_compare_classifiers_attack(df, smote_flag=0, attack_mapping=None):
     models = {}
 
     for name, clf in classifiers.items():
-        logging.info(f"Training {name}...")
         clf.fit(X_train, y_train)
         y_pred = clf.predict(X_test)
         report = classification_report(y_test, y_pred, output_dict=True, zero_division=0)
         f1_score_value = report['macro avg']['f1-score']
         mcc = matthews_corrcoef(y_test, y_pred)
-        logging.info(f"\n--- Classification Report: {name} ---\n{classification_report(y_test, y_pred, zero_division=0)}")
+
         results.append([name, f"{f1_score_value:.4f}", f"{mcc:.4f}"])
         models[name] = clf
 
     best_model_name = max(results, key=lambda x: float(x[1]))[0]
     best_model = models[best_model_name]
-    logging.info(f"The best model is: {best_model_name}")
 
     model_bytes = pickle.dumps(best_model)
-    logging.info("Best model serialized to memory.")
 
     deploy_model_to_inference_service_attack(model_bytes)
 
     send_attack_mapping(attack_mapping)
 
     headers = ["Model", "F1 Score", "Matthews Corr Coef"]
-    logging.info("\n=== Model Performance Summary ===\n" + tabulate(results, headers=headers, tablefmt='grid'))
 
     return models
 
-def deploy_model_to_inference_service(model_bytes, endpoint='http://0.0.0.0:9050/update-model'):
+def deploy_model_to_inference_service(model_bytes, endpoint='http://ml_inference_api:9050/update-model'):
     """Send the trained model (in memory) to the inference server."""
-    logging.info(f"Deploying model to inference service at {endpoint}...")
+
     try:
         files = {'modeltr_pickle': ('model.pkl', model_bytes)}
         response = requests.post(endpoint, files=files)
@@ -377,9 +348,9 @@ def deploy_model_to_inference_service(model_bytes, endpoint='http://0.0.0.0:9050
     except Exception as e:
         logging.error(f"Exception during model deployment: {str(e)}")
 
-def deploy_model_to_inference_service_attack(model_bytes, endpoint='http://0.0.0.0:9050/update-model-attack'):
+def deploy_model_to_inference_service_attack(model_bytes, endpoint='http://ml_inference_api:9050/update-model-attack'):
     """Send the trained model (in memory) to the inference server."""
-    logging.info(f"Deploying model to inference service at {endpoint}...")
+
     try:
         files = {'modeltr_pickle': ('model_attack.pkl', model_bytes)}
         response = requests.post(endpoint, files=files)
@@ -390,7 +361,7 @@ def deploy_model_to_inference_service_attack(model_bytes, endpoint='http://0.0.0
     except Exception as e:
         logging.error(f"Exception during model deployment: {str(e)}")
 
-def send_attack_mapping(mapping, endpoint='http://0.0.0.0:9050/update-attack-mapping'):
+def send_attack_mapping(mapping, endpoint='http://ml_inference_api:9050/update-attack-mapping'):
     try:
         response = requests.post(endpoint, json=mapping)
         if response.status_code == 200:
@@ -406,7 +377,7 @@ def main():
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s',
         handlers=[
-            logging.FileHandler('ml_logs_csv2.log'),
+            logging.FileHandler('logs/ml_training.log'),
             logging.StreamHandler()
         ]
     )

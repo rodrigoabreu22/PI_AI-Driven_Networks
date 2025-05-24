@@ -13,7 +13,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('ml_training_api.log'),
+        logging.FileHandler('logs/ml_training_api.log'),
         logging.StreamHandler()
     ]
 )

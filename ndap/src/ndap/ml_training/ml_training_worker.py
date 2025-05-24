@@ -100,7 +100,7 @@ def train_model_by_id(model_id):
 
     try:
         client = clickhouse_connect.get_client(
-            host='localhost',
+            host='clickhouse',
             port=8123,
             username='network',
             password='network25pi',
@@ -143,7 +143,6 @@ def train_model_by_id(model_id):
             "mcc": mcc
         }
 
-        logging.info(f"Model performance metrics: {metrics}")
         return metrics
 
     except Exception as e:

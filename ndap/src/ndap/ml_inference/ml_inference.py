@@ -16,15 +16,7 @@ reverse_attack_mapping = {}
 
 TOPIC_PROCESSED_NETWORK_DATA = "PROCESSED_NETWORK_DATA"
 TOPIC_INFERENCE_DATA = "INFERENCE_DATA"
-BROKER = 'localhost:29092'
-
-# Configure logging to file
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    filename='inference.log',
-    filemode='a'  # 'a' to append, 'w' to overwrite each run
-)
+BROKER = 'kafka:9092'
 
 def create_topic(topic_name, broker, num_partitions=1, replication_factor=1):
     admin_client = KafkaAdminClient(bootstrap_servers=broker)
@@ -113,33 +105,26 @@ def start_kafka_inference_loop():
 
     while binary_model is None:
         logging.info("Waiting for model to be loaded...")
-        time.sleep(5)
+        time.sleep(360)
 
     logging.info("Kafka consumer and model are ready.")
 
     for message in consumer:
         flow = message.value
-        logging.info(f"FLOW_init= {flow}")
 
         try:
             df_processed = pre_process_single_flow(flow, binary_model.feature_names_in_)
 
             binary_pred = binary_model.predict(df_processed)[0]
-            logging.info(f"flow1: {df_processed.iloc[0].to_dict()}")
             flow['Label'] = int(binary_pred)
             if int(binary_pred)==1:
-                logging.info("MAYDAY")
-                logging.info(reverse_attack_mapping)
                 multiclass_pred = multiclass_model.predict(df_processed)[0]
                 attack_label = reverse_attack_mapping.get(multiclass_pred, "Unknown")
                 flow['Attack'] = attack_label
             else:
                 flow['Attack'] = 'Benign'
-                logging.info("NO ATTACK")
-            logging.info(f"flow2: {flow}")
 
             producer.send(TOPIC_INFERENCE_DATA, flow)
-            logging.info(f"Processed flow: Label={flow['Label']}, Attack={flow['Attack']}")
 
         except Exception as e:
             logging.error(f"Error processing flow: {e}", exc_info=True)

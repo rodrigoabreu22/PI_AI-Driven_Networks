@@ -8,8 +8,17 @@ import pickle
 import threading
 import logging
 from contextlib import asynccontextmanager
-
+import uvicorn
 from ml_inference import update_binary_model, start_kafka_inference_loop, update_multiclass_model, update_attack_mapping
+
+# Configure logging to file
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    filename='logs/inference.log',
+    filemode='a'  # 'a' to append, 'w' to overwrite each run
+)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -48,5 +57,6 @@ async def update_attack_mapping_endpoint(mapping: dict = Body(...)):
         return {"message": "Attack mapping updated successfully", "received": mapping}
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
-
-
+    
+if __name__ == "__main__":
+    uvicorn.run("ml_inference_api:app", host="0.0.0.0", port=9050, reload=False)
