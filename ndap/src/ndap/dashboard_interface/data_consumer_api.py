@@ -52,12 +52,10 @@ async def influx_worker():
                     point.tag(key, str(value))
 
             write_api.write(bucket=INFLUXDB_BUCKET, org=INFLUXDB2_ORG, record=point)
+            data_queue.task_done()
 
         except Exception as e:
             logging.error(f"Failed to write to InfluxDB: {e}")
-
-        finally:
-            data_queue.task_done()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

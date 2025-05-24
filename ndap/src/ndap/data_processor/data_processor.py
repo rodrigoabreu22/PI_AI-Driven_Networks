@@ -27,7 +27,7 @@ def create_topic(topic_name, broker, num_partitions=1, replication_factor=1):
             # Create the topic
             topic = NewTopic(name=topic_name, num_partitions=num_partitions, replication_factor=replication_factor)
             admin_client.create_topics([topic])
-            logging.info(f"Topic '{topic_name}' created successfully.")
+
     except Exception as e:
         logging.error(f"Failed to create topic '{topic_name}': {e}")
     finally:
