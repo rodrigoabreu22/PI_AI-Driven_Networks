@@ -2,6 +2,8 @@ import { useState } from 'react';
 import StreamingTable from './components/StreamingTable';
 import SimpleModelTable from './components/SimpleModelTable';
 import PacketInfoDisplay from './components/PacketInfoDisplay';
+import AlertSection from './components/AlertSection'; // ✅ NEW IMPORT
+import AlertHistoryTable from './components/AlertHistoryTable';
 import useCsvLoader from './hooks/useCsvLoader';
 import { Button, Box } from '@mui/material';
 import Navbar from './components/Navbar'; // ✅ NEW IMPORT
@@ -13,6 +15,12 @@ function App() {
 
   const [modelIndex, setModelIndex] = useState(0);
   const [selectedPacket, setSelectedPacket] = useState(null);
+  const [alertHistory, setAlertHistory] = useState([]);
+
+
+  const handleNewAlert = (alert) => {
+    setAlertHistory((prev) => [...prev, alert]);
+  };
 
   const pcapColumns = [
     { id: 'timestamp', label: 'Timestamp', minWidth: 150 },
@@ -57,6 +65,7 @@ function App() {
     <Box>
       <Navbar /> {/* ✅ Render Navbar at the top */}
 
+      <AlertSection onNewAlert={handleNewAlert} />
       <Box sx={{ padding: 4 }}>
         <Box sx={{ display: 'flex', gap: 4, mb: 4, height: '400px' }}>
           <Box sx={{ width: '1400px', height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -80,7 +89,11 @@ function App() {
               justifyContent: 'space-between',
             }}
           >
-            <SimpleModelTable title="New Model" row={newModel} />
+            <SimpleModelTable
+              title={`New Model${newModel?.Name ? ` (${newModel.Name})` : ''}`}
+              row={newModel}
+            />
+
           </Box>
         </Box>
 
@@ -102,7 +115,11 @@ function App() {
               justifyContent: 'space-between',
             }}
           >
-            <SimpleModelTable title="Last Model" row={lastModel} />
+            <SimpleModelTable
+              title={`Last Model${lastModel?.Name ? ` (${lastModel.Name})` : ''}`}
+              row={lastModel}
+            />
+
             <Button
               variant="contained"
               onClick={handleUpdateModel}
@@ -114,6 +131,11 @@ function App() {
           </Box>
         </Box>
       </Box>
+      <div>‎ </div>
+      <div>‎ </div>
+      <div>‎ </div>
+
+      <AlertHistoryTable alertData={alertHistory} />
     </Box>
   );
 }
