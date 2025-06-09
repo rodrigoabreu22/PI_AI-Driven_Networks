@@ -21,7 +21,7 @@ To address these challenges, our work introduces a scalable and modular MLOps pi
 
 ## Promotional Video
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/lXgchBfzUZE" frameborder="0" allowfullscreen></iframe>
+[![Promotional Video](images/promotional_video.png)](https://www.youtube.com/watch?v=lXgchBfzUZE)
 
 ## Poster
 
@@ -41,7 +41,7 @@ To address these challenges, our work introduces a scalable and modular MLOps pi
 
 ### Requirements
 
-Ensure you have [Docker]([https://](https://www.docker.com/)) installed, with [Docker Compose]([https://](https://docs.docker.com/compose/)) available.
+Ensure you have [Docker](https://www.docker.com/) installed, with [Docker Compose](https://docs.docker.com/compose/) available.
 
 Go to the ndap directory:
 
@@ -53,7 +53,7 @@ Also install the necessary requirements:
 pip install -r requirements.txt
 ```
 
-It is also necessary to have the .pcap files. Start by criating a dataset_files directory. Click [here]([https://](https://unsw-my.sharepoint.com/personal/z5025758_ad_unsw_edu_au/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fz5025758%5Fad%5Funsw%5Fedu%5Fau%2FDocuments%2FUNSW%2DNB15%20dataset%2Fpcap%20files%2Fpcaps%2017%2D2%2D2015&ga=1)) to download the .pcap files used by our team.
+It is also necessary to have the .pcap files. Start by criating a dataset_files directory. Click [here](https://unsw-my.sharepoint.com/personal/z5025758_ad_unsw_edu_au/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fz5025758%5Fad%5Funsw%5Fedu%5Fau%2FDocuments%2FUNSW%2DNB15%20dataset%2Fpcap%20files%2Fpcaps%2017%2D2%2D2015&ga=1) to download the .pcap files used by our team.
 
 ### .env
 
@@ -86,7 +86,7 @@ Start docker:
 docker compose up -d --build
 ```
 
-Go to [Raw DB]([http://](http://localhost:8087)) or to localhost:8087. Insert the following information:
+Go to [Raw DB](http://localhost:8087) or to localhost:8087. Insert the following information:
 
 ```txt
 USERNAME=admin
@@ -101,7 +101,7 @@ Retrive the token and add It to the .env file
 INFLUXDB_TOKEN=""
 ```
 
-Go to [Dashboard DB]([http://](http://localhost:8086)) or to localhost:8086. Insert the following information:
+Go to [Dashboard DB](http://localhost:8086) or to localhost:8086. Insert the following information:
 
 ```txt
 USERNAME=admin
@@ -128,6 +128,6 @@ Restart docker:
 docker compose up -d --build
 ```
 
-To access the dashboard interfece (Chronograf) click [here]([http://](http://localhost:8888)) or go to localhost:8888
+To access the dashboard interfece (Chronograf) click [here](http://localhost:8888) or go to localhost:8888
 
 You will need to import the following [Json file](<ndap/dashboards.json>) to have access to our dashboards
