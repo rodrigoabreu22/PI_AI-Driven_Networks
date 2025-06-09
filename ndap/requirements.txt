@@ -6,3 +6,10 @@ clickhouse-connect
 influxdb-client
 python-dotenv
 scapy
+clickhouse-driver
+scikit-learn
+python-multipart
+uvicorn
+tabulate
+imbalanced-learn
+xgboost

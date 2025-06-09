@@ -6,3 +6,4 @@ venv/
 *.json
 last_timestamp.txt
 extracted.flows
+__pycache__/

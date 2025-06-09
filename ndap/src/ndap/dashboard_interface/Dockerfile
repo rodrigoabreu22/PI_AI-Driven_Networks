@@ -7,4 +7,6 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY ./src/ndap/dashboard_interface/ /app
 
-CMD ["python", "data_consumer_middleware.py"]
+EXPOSE 8074
+
+CMD ["python", "data_consumer_api.py"]

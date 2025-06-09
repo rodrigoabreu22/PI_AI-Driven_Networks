@@ -7,4 +7,6 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY ./src/ndap/data_producer/ /app
 
-CMD ["python", "data_producer.py"]
+EXPOSE 8071
+
+CMD ["python", "nwdaf_collector.py"]
