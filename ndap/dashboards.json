@@ -1,0 +1,1857 @@
+{
+	"meta": {
+		"chronografVersion": "1.10.6",
+		"sources": {
+			"0": {
+				"name": "http://influxdb_processed:8086/",
+				"link": "/chronograf/v1/sources/0"
+			}
+		}
+	},
+	"dashboard": {
+		"id": "3",
+		"cells": [
+			{
+				"i": "2533efac-3be4-4c14-b5d6-3e5fa418cd1e",
+				"x": 0,
+				"y": 28,
+				"w": 11,
+				"h": 4,
+				"name": "Type and Number of Attacks",
+				"queries": [
+					{
+						"query": "SELECT COUNT(\"Label\") AS count \nFROM \"processed_data\".\"autogen\".\"network_processed_data\"\nGROUP BY \"Attack\"",
+						"queryConfig": {
+							"database": "processed_data",
+							"measurement": "network_processed_data",
+							"retentionPolicy": "autogen",
+							"fields": [
+								{
+									"value": "count",
+									"type": "func",
+									"alias": "count",
+									"args": [
+										{
+											"value": "Label",
+											"type": "field",
+											"alias": ""
+										}
+									]
+								}
+							],
+							"tags": {},
+							"groupBy": {
+								"time": "",
+								"tags": [
+									"Attack"
+								]
+							},
+							"areTagsAccepted": false,
+							"rawText": null,
+							"range": null,
+							"shifts": null
+						},
+						"source": "",
+						"type": "influxql"
+					}
+				],
+				"axes": {
+					"x": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					},
+					"y": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					},
+					"y2": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					}
+				},
+				"type": "table",
+				"colors": [
+					{
+						"id": "base",
+						"type": "text",
+						"hex": "#00C9FF",
+						"name": "laser",
+						"value": "-1000000000000000000"
+					}
+				],
+				"legend": {},
+				"tableOptions": {
+					"verticalTimeAxis": true,
+					"sortBy": {
+						"internalName": "time",
+						"displayName": "",
+						"visible": true
+					},
+					"wrapping": "truncate",
+					"fixFirstColumn": true
+				},
+				"fieldOptions": [
+					{
+						"internalName": "time",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "Attack",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.count",
+						"displayName": "",
+						"visible": true
+					}
+				],
+				"timeFormat": "MM/DD/YYYY HH:mm:ss",
+				"decimalPlaces": {
+					"isEnforced": true,
+					"digits": 2
+				},
+				"note": "",
+				"noteVisibility": "default",
+				"links": {
+					"self": "/chronograf/v1/dashboards/3/cells/2533efac-3be4-4c14-b5d6-3e5fa418cd1e"
+				}
+			},
+			{
+				"i": "209b81cf-2192-4e65-83a2-72fee6d01ef9",
+				"x": 0,
+				"y": 24,
+				"w": 11,
+				"h": 4,
+				"name": "Incoming identified Attacks",
+				"queries": [
+					{
+						"query": "SELECT * FROM \"processed_data\".\"autogen\".\"network_processed_data\"\nWHERE \"Attack\" != 'Benign'\nORDER BY time DESC\nLIMIT 10",
+						"queryConfig": {
+							"database": "",
+							"measurement": "",
+							"retentionPolicy": "",
+							"fields": [],
+							"tags": {},
+							"groupBy": {
+								"time": "",
+								"tags": []
+							},
+							"areTagsAccepted": false,
+							"rawText": "SELECT * FROM \"processed_data\".\"autogen\".\"network_processed_data\"\nWHERE \"Attack\" != 'Benign'\nORDER BY time DESC\nLIMIT 10",
+							"range": null,
+							"shifts": null
+						},
+						"source": "",
+						"type": "influxql"
+					}
+				],
+				"axes": {
+					"x": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					},
+					"y": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					},
+					"y2": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					}
+				},
+				"type": "table",
+				"colors": [
+					{
+						"id": "base",
+						"type": "text",
+						"hex": "#00C9FF",
+						"name": "laser",
+						"value": "-1000000000000000000"
+					}
+				],
+				"legend": {},
+				"tableOptions": {
+					"verticalTimeAxis": true,
+					"sortBy": {
+						"internalName": "time",
+						"displayName": "",
+						"visible": true
+					},
+					"wrapping": "truncate",
+					"fixFirstColumn": true
+				},
+				"fieldOptions": [
+					{
+						"internalName": "time",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.Attack",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.CLIENT_TCP_FLAGS",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.DNS_QUERY_ID",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.DNS_QUERY_TYPE",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.DNS_TTL_ANSWER",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.DST_TO_SRC_AVG_THROUGHPUT",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.DST_TO_SRC_SECOND_BYTES",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.DURATION_IN",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.DURATION_OUT",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.FLOW_DURATION_MILLISECONDS",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.FTP_COMMAND_RET_CODE",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.ICMP_IPV4_TYPE",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.ICMP_TYPE",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.IN_BYTES",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.IN_PKTS",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.IPV4_DST_ADDR",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.IPV4_SRC_ADDR",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.L4_DST_PORT",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.L4_SRC_PORT",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.L7_PROTO",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.LONGEST_FLOW_PKT",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.Label",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.MAX_IP_PKT_LEN",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.MAX_TTL",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.MIN_IP_PKT_LEN",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.MIN_TTL",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.NUM_PKTS_1024_TO_1514_BYTES",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.NUM_PKTS_128_TO_256_BYTES",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.NUM_PKTS_256_TO_512_BYTES",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.NUM_PKTS_512_TO_1024_BYTES",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.NUM_PKTS_UP_TO_128_BYTES",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.OUT_BYTES",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.OUT_PKTS",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.PROTOCOL",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.RETRANSMITTED_IN_BYTES",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.RETRANSMITTED_IN_PKTS",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.RETRANSMITTED_OUT_BYTES",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.RETRANSMITTED_OUT_PKTS",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.SERVER_TCP_FLAGS",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.SHORTEST_FLOW_PKT",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.SRC_TO_DST_AVG_THROUGHPUT",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.SRC_TO_DST_SECOND_BYTES",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.TCP_FLAGS",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.TCP_WIN_MAX_IN",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.TCP_WIN_MAX_OUT",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.source",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.timestamp_unix",
+						"displayName": "",
+						"visible": true
+					}
+				],
+				"timeFormat": "MM/DD/YYYY HH:mm:ss",
+				"decimalPlaces": {
+					"isEnforced": true,
+					"digits": 2
+				},
+				"note": "",
+				"noteVisibility": "default",
+				"links": {
+					"self": "/chronograf/v1/dashboards/3/cells/209b81cf-2192-4e65-83a2-72fee6d01ef9"
+				}
+			},
+			{
+				"i": "e04add73-c26a-4e5b-bfd2-ceb90f6e2657",
+				"x": 0,
+				"y": 20,
+				"w": 11,
+				"h": 4,
+				"name": "Mean Maximum and Minimum IP Packet Lengths per Flow",
+				"queries": [
+					{
+						"query": "SELECT \n  sum(\"IN_PKTS\") AS \"Incoming Packets\", \n  sum(\"OUT_PKTS\") AS \"Outgoing Packets\" \nFROM \"processed_data\".\"autogen\".\"network_processed_data\"\nWHERE time > now() - 30m\nGROUP BY time(1m)",
+						"queryConfig": {
+							"database": "processed_data",
+							"measurement": "network_processed_data",
+							"retentionPolicy": "autogen",
+							"fields": [
+								{
+									"value": "sum",
+									"type": "func",
+									"alias": "Incoming Packets",
+									"args": [
+										{
+											"value": "IN_PKTS",
+											"type": "field",
+											"alias": ""
+										}
+									]
+								},
+								{
+									"value": "sum",
+									"type": "func",
+									"alias": "Outgoing Packets",
+									"args": [
+										{
+											"value": "OUT_PKTS",
+											"type": "field",
+											"alias": ""
+										}
+									]
+								}
+							],
+							"tags": {},
+							"groupBy": {
+								"time": "1m",
+								"tags": []
+							},
+							"areTagsAccepted": false,
+							"fill": "null",
+							"rawText": null,
+							"range": {
+								"upper": "",
+								"lower": "now() - 30m"
+							},
+							"shifts": null
+						},
+						"source": "",
+						"type": "influxql"
+					}
+				],
+				"axes": {
+					"x": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					},
+					"y": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					},
+					"y2": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					}
+				},
+				"type": "line",
+				"colors": [
+					{
+						"id": "9076c83a-397e-4123-b7ef-687dbeacc9a0",
+						"type": "scale",
+						"hex": "#31C0F6",
+						"name": "Nineteen Eighty Four",
+						"value": "0"
+					},
+					{
+						"id": "703699b9-a0ff-424f-9ebc-47e09c6dbb18",
+						"type": "scale",
+						"hex": "#A500A5",
+						"name": "Nineteen Eighty Four",
+						"value": "0"
+					},
+					{
+						"id": "92706d55-dd80-435f-a8a8-ae292b688ff7",
+						"type": "scale",
+						"hex": "#FF7E27",
+						"name": "Nineteen Eighty Four",
+						"value": "0"
+					}
+				],
+				"legend": {},
+				"tableOptions": {
+					"verticalTimeAxis": true,
+					"sortBy": {
+						"internalName": "time",
+						"displayName": "",
+						"visible": true
+					},
+					"wrapping": "truncate",
+					"fixFirstColumn": true
+				},
+				"fieldOptions": [
+					{
+						"internalName": "time",
+						"displayName": "",
+						"visible": true
+					}
+				],
+				"timeFormat": "MM/DD/YYYY HH:mm:ss",
+				"decimalPlaces": {
+					"isEnforced": true,
+					"digits": 2
+				},
+				"note": "",
+				"noteVisibility": "default",
+				"links": {
+					"self": "/chronograf/v1/dashboards/3/cells/e04add73-c26a-4e5b-bfd2-ceb90f6e2657"
+				}
+			},
+			{
+				"i": "e773acba-7883-43e2-af6a-c32be991609d",
+				"x": 0,
+				"y": 12,
+				"w": 11,
+				"h": 4,
+				"name": "Packet Size Distribution",
+				"queries": [
+					{
+						"query": "SELECT sum(\"NUM_PKTS_UP_TO_128_BYTES\") AS \"≤128B\", sum(\"NUM_PKTS_128_TO_256_BYTES\") AS \"128–256B\", sum(\"NUM_PKTS_256_TO_512_BYTES\") AS \"256–512B\", sum(\"NUM_PKTS_512_TO_1024_BYTES\") AS \"512–1024B\", sum(\"NUM_PKTS_1024_TO_1514_BYTES\") AS \"1024–1514B\", mean(\"DNS_QUERY_TYPE\") AS \"mean_DNS_QUERY_TYPE\" FROM \"processed_data\".\"autogen\".\"network_processed_data\" WHERE time > now() - 30m GROUP BY time(5m) FILL(none)",
+						"queryConfig": {
+							"database": "processed_data",
+							"measurement": "network_processed_data",
+							"retentionPolicy": "autogen",
+							"fields": [
+								{
+									"value": "sum",
+									"type": "func",
+									"alias": "≤128B",
+									"args": [
+										{
+											"value": "NUM_PKTS_UP_TO_128_BYTES",
+											"type": "field",
+											"alias": ""
+										}
+									]
+								},
+								{
+									"value": "sum",
+									"type": "func",
+									"alias": "128–256B",
+									"args": [
+										{
+											"value": "NUM_PKTS_128_TO_256_BYTES",
+											"type": "field",
+											"alias": ""
+										}
+									]
+								},
+								{
+									"value": "sum",
+									"type": "func",
+									"alias": "256–512B",
+									"args": [
+										{
+											"value": "NUM_PKTS_256_TO_512_BYTES",
+											"type": "field",
+											"alias": ""
+										}
+									]
+								},
+								{
+									"value": "sum",
+									"type": "func",
+									"alias": "512–1024B",
+									"args": [
+										{
+											"value": "NUM_PKTS_512_TO_1024_BYTES",
+											"type": "field",
+											"alias": ""
+										}
+									]
+								},
+								{
+									"value": "sum",
+									"type": "func",
+									"alias": "1024–1514B",
+									"args": [
+										{
+											"value": "NUM_PKTS_1024_TO_1514_BYTES",
+											"type": "field",
+											"alias": ""
+										}
+									]
+								},
+								{
+									"value": "mean",
+									"type": "func",
+									"alias": "mean_DNS_QUERY_TYPE",
+									"args": [
+										{
+											"value": "DNS_QUERY_TYPE",
+											"type": "field",
+											"alias": ""
+										}
+									]
+								}
+							],
+							"tags": {},
+							"groupBy": {
+								"time": "5m",
+								"tags": []
+							},
+							"areTagsAccepted": false,
+							"fill": "none",
+							"rawText": null,
+							"range": {
+								"upper": "",
+								"lower": "now() - 30m"
+							},
+							"shifts": null
+						},
+						"source": "/chronograf/v1/sources/0",
+						"type": "influxql"
+					}
+				],
+				"axes": {
+					"x": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					},
+					"y": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					},
+					"y2": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					}
+				},
+				"type": "bar",
+				"colors": [
+					{
+						"id": "93120a27-2548-49ed-93de-e72d736edaa3",
+						"type": "scale",
+						"hex": "#31C0F6",
+						"name": "Nineteen Eighty Four",
+						"value": "0"
+					},
+					{
+						"id": "67f01a5f-64aa-4a8b-b0af-1313f9d8b4e9",
+						"type": "scale",
+						"hex": "#A500A5",
+						"name": "Nineteen Eighty Four",
+						"value": "0"
+					},
+					{
+						"id": "2d4be0ec-c8a9-48c9-9ecf-1fe02ccb9cd8",
+						"type": "scale",
+						"hex": "#FF7E27",
+						"name": "Nineteen Eighty Four",
+						"value": "0"
+					}
+				],
+				"legend": {},
+				"tableOptions": {
+					"verticalTimeAxis": true,
+					"sortBy": {
+						"internalName": "time",
+						"displayName": "",
+						"visible": true
+					},
+					"wrapping": "truncate",
+					"fixFirstColumn": true
+				},
+				"fieldOptions": [
+					{
+						"internalName": "time",
+						"displayName": "",
+						"visible": true
+					}
+				],
+				"timeFormat": "MM/DD/YYYY HH:mm:ss",
+				"decimalPlaces": {
+					"isEnforced": true,
+					"digits": 2
+				},
+				"note": "",
+				"noteVisibility": "default",
+				"links": {
+					"self": "/chronograf/v1/dashboards/3/cells/e773acba-7883-43e2-af6a-c32be991609d"
+				}
+			},
+			{
+				"i": "2da20287-cb92-40fa-abb7-84f7b9de4599",
+				"x": 0,
+				"y": 8,
+				"w": 11,
+				"h": 4,
+				"name": "Packet Size Distribution",
+				"queries": [
+					{
+						"query": "SELECT \n    SUM(NUM_PKTS_UP_TO_128_BYTES) AS \"0-128B\",\n    SUM(NUM_PKTS_128_TO_256_BYTES) AS \"128-256B\",\n    SUM(NUM_PKTS_256_TO_512_BYTES) AS \"256-512B\",\n    SUM(NUM_PKTS_512_TO_1024_BYTES) AS \"512-1024B\",\n    SUM(NUM_PKTS_1024_TO_1514_BYTES) AS \"1024-1514B\"\nFROM \"processed_data\".\"autogen\".\"network_processed_data\"\nWHERE time > now() - 1h;",
+						"queryConfig": {
+							"database": "processed_data",
+							"measurement": "network_processed_data",
+							"retentionPolicy": "autogen",
+							"fields": [
+								{
+									"value": "sum",
+									"type": "func",
+									"alias": "0-128B",
+									"args": [
+										{
+											"value": "NUM_PKTS_UP_TO_128_BYTES",
+											"type": "field",
+											"alias": ""
+										}
+									]
+								},
+								{
+									"value": "sum",
+									"type": "func",
+									"alias": "128-256B",
+									"args": [
+										{
+											"value": "NUM_PKTS_128_TO_256_BYTES",
+											"type": "field",
+											"alias": ""
+										}
+									]
+								},
+								{
+									"value": "sum",
+									"type": "func",
+									"alias": "256-512B",
+									"args": [
+										{
+											"value": "NUM_PKTS_256_TO_512_BYTES",
+											"type": "field",
+											"alias": ""
+										}
+									]
+								},
+								{
+									"value": "sum",
+									"type": "func",
+									"alias": "512-1024B",
+									"args": [
+										{
+											"value": "NUM_PKTS_512_TO_1024_BYTES",
+											"type": "field",
+											"alias": ""
+										}
+									]
+								},
+								{
+									"value": "sum",
+									"type": "func",
+									"alias": "1024-1514B",
+									"args": [
+										{
+											"value": "NUM_PKTS_1024_TO_1514_BYTES",
+											"type": "field",
+											"alias": ""
+										}
+									]
+								}
+							],
+							"tags": {},
+							"groupBy": {
+								"time": "",
+								"tags": []
+							},
+							"areTagsAccepted": false,
+							"rawText": null,
+							"range": {
+								"upper": "",
+								"lower": "now() - 1h"
+							},
+							"shifts": null
+						},
+						"source": "",
+						"type": "influxql"
+					}
+				],
+				"axes": {
+					"x": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					},
+					"y": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					},
+					"y2": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					}
+				},
+				"type": "table",
+				"colors": [
+					{
+						"id": "base",
+						"type": "text",
+						"hex": "#00C9FF",
+						"name": "laser",
+						"value": "-1000000000000000000"
+					}
+				],
+				"legend": {},
+				"tableOptions": {
+					"verticalTimeAxis": true,
+					"sortBy": {
+						"internalName": "time",
+						"displayName": "",
+						"visible": true
+					},
+					"wrapping": "truncate",
+					"fixFirstColumn": true
+				},
+				"fieldOptions": [
+					{
+						"internalName": "time",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.0-128B",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.1024-1514B",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.128-256B",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.256-512B",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.512-1024B",
+						"displayName": "",
+						"visible": true
+					}
+				],
+				"timeFormat": "MM/DD/YYYY HH:mm:ss",
+				"decimalPlaces": {
+					"isEnforced": true,
+					"digits": 2
+				},
+				"note": "",
+				"noteVisibility": "default",
+				"links": {
+					"self": "/chronograf/v1/dashboards/3/cells/2da20287-cb92-40fa-abb7-84f7b9de4599"
+				}
+			},
+			{
+				"i": "514aab77-81a9-4213-a0b9-077f90eeb0ea",
+				"x": 5,
+				"y": 0,
+				"w": 6,
+				"h": 4,
+				"name": "TCP Retransmission Rate",
+				"queries": [
+					{
+						"query": "SELECT SUM(RETRANSMITTED_IN_PKTS) / SUM(IN_PKTS) * 100 AS retransmission_rate \nFROM \"processed_data\".\"autogen\".\"network_processed_data\" \nWHERE time > now() - 1h;",
+						"queryConfig": {
+							"database": "",
+							"measurement": "",
+							"retentionPolicy": "",
+							"fields": [],
+							"tags": {},
+							"groupBy": {
+								"time": "",
+								"tags": []
+							},
+							"areTagsAccepted": false,
+							"rawText": "SELECT SUM(RETRANSMITTED_IN_PKTS) / SUM(IN_PKTS) * 100 AS retransmission_rate \nFROM \"processed_data\".\"autogen\".\"network_processed_data\" \nWHERE time > now() - 1h;",
+							"range": null,
+							"shifts": null
+						},
+						"source": "",
+						"type": "influxql"
+					}
+				],
+				"axes": {
+					"x": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					},
+					"y": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					},
+					"y2": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					}
+				},
+				"type": "gauge",
+				"colors": [
+					{
+						"id": "0",
+						"type": "min",
+						"hex": "#00C9FF",
+						"name": "laser",
+						"value": "0"
+					},
+					{
+						"id": "1",
+						"type": "max",
+						"hex": "#9394FF",
+						"name": "comet",
+						"value": "100"
+					}
+				],
+				"legend": {},
+				"tableOptions": {
+					"verticalTimeAxis": true,
+					"sortBy": {
+						"internalName": "time",
+						"displayName": "",
+						"visible": true
+					},
+					"wrapping": "truncate",
+					"fixFirstColumn": true
+				},
+				"fieldOptions": [
+					{
+						"internalName": "time",
+						"displayName": "",
+						"visible": true
+					}
+				],
+				"timeFormat": "MM/DD/YYYY HH:mm:ss",
+				"decimalPlaces": {
+					"isEnforced": true,
+					"digits": 2
+				},
+				"note": "",
+				"noteVisibility": "default",
+				"links": {
+					"self": "/chronograf/v1/dashboards/3/cells/514aab77-81a9-4213-a0b9-077f90eeb0ea"
+				}
+			},
+			{
+				"i": "c743ed37-ebc2-48c5-af4c-f13b684f5a37",
+				"x": 0,
+				"y": 0,
+				"w": 5,
+				"h": 4,
+				"name": "Network Traffic Overview",
+				"queries": [
+					{
+						"query": "SELECT MEAN(IN_BYTES) AS avg_in_bytes, MEAN(OUT_BYTES) AS avg_out_bytes \nFROM \"processed_data\".\"autogen\".\"network_processed_data\" \nWHERE time > now() - 30m \nGROUP BY time(1m) \nORDER BY time DESC;",
+						"queryConfig": {
+							"database": "",
+							"measurement": "",
+							"retentionPolicy": "",
+							"fields": [],
+							"tags": {},
+							"groupBy": {
+								"time": "",
+								"tags": []
+							},
+							"areTagsAccepted": false,
+							"rawText": "SELECT MEAN(IN_BYTES) AS avg_in_bytes, MEAN(OUT_BYTES) AS avg_out_bytes \nFROM \"processed_data\".\"autogen\".\"network_processed_data\" \nWHERE time > now() - 30m \nGROUP BY time(1m) \nORDER BY time DESC;",
+							"range": null,
+							"shifts": null
+						},
+						"source": "/chronograf/v1/sources/0",
+						"type": "influxql"
+					}
+				],
+				"axes": {
+					"x": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					},
+					"y": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					},
+					"y2": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					}
+				},
+				"type": "line",
+				"colors": [
+					{
+						"id": "dd4c1196-6639-4f36-a294-fcb7cede03da",
+						"type": "scale",
+						"hex": "#31C0F6",
+						"name": "Nineteen Eighty Four",
+						"value": "0"
+					},
+					{
+						"id": "6e2c668f-44a6-42c7-b7b0-8d23ea0ea327",
+						"type": "scale",
+						"hex": "#A500A5",
+						"name": "Nineteen Eighty Four",
+						"value": "0"
+					},
+					{
+						"id": "d4104fa8-7431-4cfd-bb9f-d331ab9a2d73",
+						"type": "scale",
+						"hex": "#FF7E27",
+						"name": "Nineteen Eighty Four",
+						"value": "0"
+					}
+				],
+				"legend": {},
+				"tableOptions": {
+					"verticalTimeAxis": true,
+					"sortBy": {
+						"internalName": "time",
+						"displayName": "",
+						"visible": true
+					},
+					"wrapping": "truncate",
+					"fixFirstColumn": true
+				},
+				"fieldOptions": [
+					{
+						"internalName": "time",
+						"displayName": "",
+						"visible": true
+					}
+				],
+				"timeFormat": "MM/DD/YYYY HH:mm:ss",
+				"decimalPlaces": {
+					"isEnforced": true,
+					"digits": 2
+				},
+				"note": "",
+				"noteVisibility": "default",
+				"links": {
+					"self": "/chronograf/v1/dashboards/3/cells/c743ed37-ebc2-48c5-af4c-f13b684f5a37"
+				}
+			},
+			{
+				"i": "7c4db71f-1fcc-4326-b8c8-ae9d8c206788",
+				"x": 0,
+				"y": 4,
+				"w": 11,
+				"h": 4,
+				"name": "Untitled Graph",
+				"queries": [
+					{
+						"query": "SELECT * \nFROM \"processed_data\".\"autogen\".\"network_processed_data\" \nORDER BY time DESC \nLIMIT 10;",
+						"queryConfig": {
+							"database": "",
+							"measurement": "",
+							"retentionPolicy": "",
+							"fields": [],
+							"tags": {},
+							"groupBy": {
+								"time": "",
+								"tags": []
+							},
+							"areTagsAccepted": false,
+							"rawText": "SELECT * \nFROM \"processed_data\".\"autogen\".\"network_processed_data\" \nORDER BY time DESC \nLIMIT 10;",
+							"range": null,
+							"shifts": null
+						},
+						"source": "",
+						"type": "influxql"
+					}
+				],
+				"axes": {
+					"x": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					},
+					"y": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					},
+					"y2": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					}
+				},
+				"type": "table",
+				"colors": [
+					{
+						"id": "base",
+						"type": "text",
+						"hex": "#00C9FF",
+						"name": "laser",
+						"value": "-1000000000000000000"
+					}
+				],
+				"legend": {},
+				"tableOptions": {
+					"verticalTimeAxis": true,
+					"sortBy": {
+						"internalName": "time",
+						"displayName": "",
+						"visible": true
+					},
+					"wrapping": "truncate",
+					"fixFirstColumn": true
+				},
+				"fieldOptions": [
+					{
+						"internalName": "time",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.Attack",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.CLIENT_TCP_FLAGS",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.DNS_QUERY_ID",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.DNS_QUERY_TYPE",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.DNS_TTL_ANSWER",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.DST_TO_SRC_AVG_THROUGHPUT",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.DST_TO_SRC_SECOND_BYTES",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.DURATION_IN",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.DURATION_OUT",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.FLOW_DURATION_MILLISECONDS",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.FTP_COMMAND_RET_CODE",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.ICMP_IPV4_TYPE",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.ICMP_TYPE",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.IN_BYTES",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.IN_PKTS",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.IPV4_DST_ADDR",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.IPV4_SRC_ADDR",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.L4_DST_PORT",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.L4_SRC_PORT",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.L7_PROTO",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.LONGEST_FLOW_PKT",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.Label",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.MAX_IP_PKT_LEN",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.MAX_TTL",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.MIN_IP_PKT_LEN",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.MIN_TTL",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.NUM_PKTS_1024_TO_1514_BYTES",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.NUM_PKTS_128_TO_256_BYTES",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.NUM_PKTS_256_TO_512_BYTES",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.NUM_PKTS_512_TO_1024_BYTES",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.NUM_PKTS_UP_TO_128_BYTES",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.OUT_BYTES",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.OUT_PKTS",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.PROTOCOL",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.RETRANSMITTED_IN_BYTES",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.RETRANSMITTED_IN_PKTS",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.RETRANSMITTED_OUT_BYTES",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.RETRANSMITTED_OUT_PKTS",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.SERVER_TCP_FLAGS",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.SHORTEST_FLOW_PKT",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.SRC_TO_DST_AVG_THROUGHPUT",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.SRC_TO_DST_SECOND_BYTES",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.TCP_FLAGS",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.TCP_WIN_MAX_IN",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.TCP_WIN_MAX_OUT",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.source",
+						"displayName": "",
+						"visible": true
+					},
+					{
+						"internalName": "network_processed_data.timestamp_unix",
+						"displayName": "",
+						"visible": true
+					}
+				],
+				"timeFormat": "MM/DD/YYYY HH:mm:ss",
+				"decimalPlaces": {
+					"isEnforced": true,
+					"digits": 2
+				},
+				"note": "",
+				"noteVisibility": "default",
+				"links": {
+					"self": "/chronograf/v1/dashboards/3/cells/7c4db71f-1fcc-4326-b8c8-ae9d8c206788"
+				}
+			},
+			{
+				"i": "28f503f8-a9ce-4c5d-8107-2fe55507cfa8",
+				"x": 0,
+				"y": 16,
+				"w": 11,
+				"h": 4,
+				"name": "Average Flow Duration",
+				"queries": [
+					{
+						"query": "SELECT MEAN(FLOW_DURATION_MILLISECONDS) AS avg_flow_duration \nFROM \"processed_data\".\"autogen\".\"network_processed_data\" \nWHERE time > now() - 30m \nGROUP BY time(5m);",
+						"queryConfig": {
+							"database": "processed_data",
+							"measurement": "network_processed_data",
+							"retentionPolicy": "autogen",
+							"fields": [
+								{
+									"value": "mean",
+									"type": "func",
+									"alias": "avg_flow_duration",
+									"args": [
+										{
+											"value": "FLOW_DURATION_MILLISECONDS",
+											"type": "field",
+											"alias": ""
+										}
+									]
+								}
+							],
+							"tags": {},
+							"groupBy": {
+								"time": "5m",
+								"tags": []
+							},
+							"areTagsAccepted": false,
+							"fill": "null",
+							"rawText": null,
+							"range": {
+								"upper": "",
+								"lower": "now() - 30m"
+							},
+							"shifts": null
+						},
+						"source": "",
+						"type": "influxql"
+					}
+				],
+				"axes": {
+					"x": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					},
+					"y": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					},
+					"y2": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					}
+				},
+				"type": "line-plus-single-stat",
+				"colors": [
+					{
+						"id": "base",
+						"type": "scale",
+						"hex": "#31C0F6",
+						"name": "Nineteen Eighty Four",
+						"value": "0"
+					},
+					{
+						"id": "6e2c668f-44a6-42c7-b7b0-8d23ea0ea327",
+						"type": "scale",
+						"hex": "#A500A5",
+						"name": "Nineteen Eighty Four",
+						"value": "0"
+					},
+					{
+						"id": "d4104fa8-7431-4cfd-bb9f-d331ab9a2d73",
+						"type": "scale",
+						"hex": "#FF7E27",
+						"name": "Nineteen Eighty Four",
+						"value": "0"
+					}
+				],
+				"legend": {},
+				"tableOptions": {
+					"verticalTimeAxis": true,
+					"sortBy": {
+						"internalName": "time",
+						"displayName": "",
+						"visible": true
+					},
+					"wrapping": "truncate",
+					"fixFirstColumn": true
+				},
+				"fieldOptions": [
+					{
+						"internalName": "time",
+						"displayName": "",
+						"visible": true
+					}
+				],
+				"timeFormat": "MM/DD/YYYY HH:mm:ss",
+				"decimalPlaces": {
+					"isEnforced": true,
+					"digits": 2
+				},
+				"note": "",
+				"noteVisibility": "default",
+				"links": {
+					"self": "/chronograf/v1/dashboards/3/cells/28f503f8-a9ce-4c5d-8107-2fe55507cfa8"
+				}
+			},
+			{
+				"i": "9d739878-7ecc-43db-9816-8cf7602e8ff7",
+				"x": 0,
+				"y": 32,
+				"w": 11,
+				"h": 4,
+				"name": "L7 Protocol Traffic – Incoming Packet Count (10s intervals)",
+				"queries": [
+					{
+						"query": "SELECT sum(\"IN_PKTS\") \nFROM \"processed_data\".\"autogen\".\"network_processed_data\"\nWHERE time >= now() - 30m\nGROUP BY time(10s), \"L7_PROTO\"",
+						"queryConfig": {
+							"database": "processed_data",
+							"measurement": "network_processed_data",
+							"retentionPolicy": "autogen",
+							"fields": [
+								{
+									"value": "sum",
+									"type": "func",
+									"alias": "",
+									"args": [
+										{
+											"value": "IN_PKTS",
+											"type": "field",
+											"alias": ""
+										}
+									]
+								}
+							],
+							"tags": {},
+							"groupBy": {
+								"time": "10s",
+								"tags": [
+									"L7_PROTO"
+								]
+							},
+							"areTagsAccepted": false,
+							"fill": "null",
+							"rawText": null,
+							"range": {
+								"upper": "",
+								"lower": "now() - 30m"
+							},
+							"shifts": null
+						},
+						"source": "/chronograf/v1/sources/0",
+						"type": "influxql"
+					}
+				],
+				"axes": {
+					"x": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					},
+					"y": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					},
+					"y2": {
+						"bounds": [
+							"",
+							""
+						],
+						"label": "",
+						"prefix": "",
+						"suffix": "",
+						"base": "10",
+						"scale": "linear"
+					}
+				},
+				"type": "line",
+				"colors": [
+					{
+						"id": "9076c83a-397e-4123-b7ef-687dbeacc9a0",
+						"type": "scale",
+						"hex": "#31C0F6",
+						"name": "Nineteen Eighty Four",
+						"value": "0"
+					},
+					{
+						"id": "703699b9-a0ff-424f-9ebc-47e09c6dbb18",
+						"type": "scale",
+						"hex": "#A500A5",
+						"name": "Nineteen Eighty Four",
+						"value": "0"
+					},
+					{
+						"id": "92706d55-dd80-435f-a8a8-ae292b688ff7",
+						"type": "scale",
+						"hex": "#FF7E27",
+						"name": "Nineteen Eighty Four",
+						"value": "0"
+					}
+				],
+				"legend": {},
+				"tableOptions": {
+					"verticalTimeAxis": true,
+					"sortBy": {
+						"internalName": "time",
+						"displayName": "",
+						"visible": true
+					},
+					"wrapping": "truncate",
+					"fixFirstColumn": true
+				},
+				"fieldOptions": [
+					{
+						"internalName": "time",
+						"displayName": "",
+						"visible": true
+					}
+				],
+				"timeFormat": "MM/DD/YYYY HH:mm:ss",
+				"decimalPlaces": {
+					"isEnforced": true,
+					"digits": 2
+				},
+				"note": "",
+				"noteVisibility": "default",
+				"links": {
+					"self": "/chronograf/v1/dashboards/3/cells/9d739878-7ecc-43db-9816-8cf7602e8ff7"
+				}
+			}
+		],
+		"templates": [],
+		"name": "Mockup",
+		"organization": "default",
+		"links": {
+			"self": "/chronograf/v1/dashboards/3",
+			"cells": "/chronograf/v1/dashboards/3/cells",
+			"templates": "/chronograf/v1/dashboards/3/templates"
+		}
+	}
+}
